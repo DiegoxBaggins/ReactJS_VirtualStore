@@ -4,6 +4,27 @@ import (
 	"fmt"
 )
 
+type Data struct {
+	Datos []Alfabeto
+}
+
+type Alfabeto struct {
+	Indice        string `json:"Indice,omitempty"`
+	Departamentos []Tipo
+}
+
+type Tipo struct {
+	Nombre  string `json:"Nombre,omitempty"`
+	Tiendas []Store
+}
+
+type Store struct {
+	Nombre       string  `json:"Nombre,omitempty"`
+	Descripcion  string  `json:"Descripcion,omitempty"`
+	Contacto     string  `json:"Contacto,omitempty"`
+	Calificacion float64 `json:"Calificacion,omitempty"`
+}
+
 type Tienda struct {
 	nombre       string
 	descripcion  string
@@ -19,10 +40,6 @@ type ListaTienda struct {
 	elementos int
 }
 
-func NuevaLista() *ListaTienda {
-	return &ListaTienda{nil, nil, 0}
-}
-
 func (lista *ListaTienda) MostrarDatos() {
 	auxiliar := lista.primero
 	for i := 0; i < lista.elementos; i++ {
@@ -31,8 +48,8 @@ func (lista *ListaTienda) MostrarDatos() {
 		auxiliar = tienda.siguiente
 	}
 	auxiliar = lista.primero
-	for i := 0; i < lista.elementos-1; i++ {
-		fmt.Println(auxiliar, auxiliar.siguiente.anterior)
+	for i := 0; i < lista.elementos; i++ {
+		fmt.Println(auxiliar)
 		auxiliar = auxiliar.siguiente
 	}
 }

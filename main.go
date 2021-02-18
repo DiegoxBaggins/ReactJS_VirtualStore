@@ -2,11 +2,48 @@ package main
 
 import (
 	"Proyecto-moduls/EstructurasCreadas"
+	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
+	"log"
+	"net/http"
 )
 
+var Datos EstructurasCreadas.Data
+
 func main() {
-	var clasificacion [27][10][5]EstructurasCreadas.ListaTienda
+	//ejemplo()
+	//enrutador denominado router
+	router := mux.NewRouter()
+
+	//Endpoints
+	router.HandleFunc("/getHello", HelloWorld).Methods("GET")
+	//router.HandleFunc("/getName", HelloWorld).Methods("GET")
+	router.HandleFunc("/getHello", GetData).Methods("POST")
+
+	// iniciar el servidor en el puerto 7000
+	log.Fatal(http.ListenAndServe(":7000", router))
+}
+
+func HelloWorld(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("Esto es una peticion de tipo get")
+}
+
+func GetData(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("Esto es una peticion de tipo post")
+	_ = json.NewDecoder(req.Body).Decode(&Datos)
+	//_ = json.NewEncoder(w).Encode(Datos)
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	encoder.Encode(Datos)
+	fmt.Print(Datos)
+	copia := Datos
+	fmt.Println(copia)
+
+}
+
+func alter() {
+	var clasificacion [10][26][5]EstructurasCreadas.ListaTienda
 	//fmt.Println(clasificacion)
 	//fmt.Println(len(clasificacion))
 
@@ -23,17 +60,66 @@ func main() {
 	//clasificacion[0][0][0].InsertarTienda("Genetikss", "Tienda en Linea",41283319,5)
 	//fmt.Println("lista", clasificacion[0][0][0])
 	//clasificacion[0][0][0].MostrarDatos()
-	clasificacion[0][0][1].InsertarTienda("Genetik", "Tienda en Linea", 41283319, 5)
+	clasificacion[0][0][0].InsertarTienda("Genetik", "Tienda en Linea", 41283319, 5)
 	clasificacion[0][0][1].InsertarTienda("Dressy", "Tienda en Linea", 41283319, 5)
 	clasificacion[0][0][1].InsertarTienda("dressy", "Tienda en Linea", 41283319, 5)
-	clasificacion[0][0][1].InsertarTienda("foes", "Tienda en Linea", 41283319, 5)
-	clasificacion[0][0][1].InsertarTienda("foes", "Tienda en Linea", 41283319, 5)
-	clasificacion[0][0][1].InsertarTienda("foes", "Tienda en Linea", 41283319, 5)
-	clasificacion[0][0][1].InsertarTienda("Armani", "Tienda en Linea", 41283319, 5)
+	clasificacion[0][0][2].InsertarTienda("foes", "Tienda en Linea", 41283319, 5)
+	clasificacion[0][0][3].InsertarTienda("foes", "Tienda en Linea", 41283319, 5)
+	clasificacion[0][0][4].InsertarTienda("foes", "Tienda en Linea", 41283319, 5)
+	clasificacion[0][1][1].InsertarTienda("Armani", "Tienda en Linea", 41283319, 5)
 	clasificacion[0][0][1].InsertarTienda("Farts", "Tienda en Linea", 41283319, 5)
 	clasificacion[0][0][1].InsertarTienda("qoes", "Tienda en Linea", 41283319, 5)
 	clasificacion[0][0][1].InsertarTienda("fies", "Tienda en Linea", 41283319, 5)
 	fmt.Println("lista", clasificacion[0][0][1])
 	clasificacion[0][0][1].MostrarDatos()
+	LinealizarRM(10, clasificacion)
+	var arreglo = LinealizarRM(10, clasificacion)
+	fmt.Println(arreglo)
+}
 
+func LinealizarRM(valor int, matriz [10][26][5]EstructurasCreadas.ListaTienda) [3000]EstructurasCreadas.ListaTienda {
+	var arreglo [3000]EstructurasCreadas.ListaTienda
+	for fila := 0; fila < valor; fila++ {
+		for columna := 0; columna < 26; columna++ {
+			for cara := 0; cara < 5; cara++ {
+				elemento := 0
+				elemento = cara + 5*(columna+(26*fila))
+				arreglo[elemento] = matriz[fila][columna][cara]
+			}
+		}
+	}
+	for objeto := 0; objeto < len(arreglo); objeto++ {
+		fmt.Println(arreglo[objeto])
+	}
+	return arreglo
+}
+
+func ejemplo() {
+	type Raza struct {
+		Nombre, Pais string
+	}
+
+	type Mascota struct {
+		Nombre string
+		Edad   int
+		Raza   Raza
+		Amigos []string // Arreglo de strings
+	}
+
+	// Vamos a probar...
+	mascotaComoJson := []byte(`{"Nombre":"Maggie","Edad":3,"Raza":{"Nombre":"Caniche","Pais":"Francia"},"Amigos":["Bichi","Snowball","Coqueta","Cuco","Golondrino"]}`)
+
+	// Recuerda, primero se define la variable
+	var mascota Mascota
+
+	// Y luego se manda su dirección de memoria
+	err := json.Unmarshal(mascotaComoJson, &mascota)
+	if err != nil {
+		fmt.Printf("Error decodificando: %v\n", err)
+	} else {
+		// Listo. Ahora podemos imprimir
+		fmt.Printf("El nombre: %s\n", mascota.Nombre)
+		fmt.Printf("País de Raza: %s\n", mascota.Raza.Pais)
+		fmt.Printf("Primer amigo: %v\n", mascota.Amigos[0])
+	}
 }

@@ -25,10 +25,42 @@ type Store struct {
 	Calificacion float64 `json:"Calificacion,omitempty"`
 }
 
+func (info *Data) CalcularTamanos() (int, int) {
+	return len(info.Datos), len(info.Datos[0].Departamentos)
+}
+
+func (info *Data) TransformarDatos() []ListaTienda {
+	numInd := len(info.Datos)
+	numDep := len(info.Datos[0].Departamentos)
+	numTie := 0
+	tamano := numInd * numDep * 5
+	arreglo := make([]ListaTienda, tamano)
+	elemento := 0
+	calificacion := 0
+	nombre := ""
+	descripcion := ""
+	contacto := ""
+	for indice := 0; indice < numInd; indice++ {
+		for departamento := 0; departamento < numDep; departamento++ {
+			numTie = len(info.Datos[indice].Departamentos[departamento].Tiendas)
+			for tienda := 0; tienda < numTie; tienda++ {
+				elemento = 0
+				calificacion = int(info.Datos[indice].Departamentos[departamento].Tiendas[tienda].Calificacion)
+				nombre = info.Datos[indice].Departamentos[departamento].Tiendas[tienda].Nombre
+				descripcion = info.Datos[indice].Departamentos[departamento].Tiendas[tienda].Descripcion
+				contacto = info.Datos[indice].Departamentos[departamento].Tiendas[tienda].Contacto
+				elemento = calificacion + 5*(indice+(numInd*departamento)) - 1
+				arreglo[elemento].InsertarTienda(nombre, descripcion, contacto, calificacion)
+			}
+		}
+	}
+	return arreglo
+}
+
 type Tienda struct {
 	nombre       string
 	descripcion  string
-	contacto     int
+	contacto     string
 	calificacion int
 	anterior     *Tienda
 	siguiente    *Tienda
@@ -70,7 +102,7 @@ func (lista *ListaTienda)InsertarTienda (nombre string, descripcion string, cont
 }
 */
 
-func (lista *ListaTienda) InsertarUltimo(nombre string, descripcion string, contacto int, calificacion int) {
+func (lista *ListaTienda) InsertarUltimo(nombre string, descripcion string, contacto string, calificacion int) {
 	nuevaTienda := &Tienda{nombre, descripcion, contacto, calificacion, nil, nil}
 	lista.ultimo.siguiente = nuevaTienda
 	nuevaTienda.anterior = lista.ultimo
@@ -78,7 +110,7 @@ func (lista *ListaTienda) InsertarUltimo(nombre string, descripcion string, cont
 	lista.elementos += 1
 }
 
-func (lista *ListaTienda) InsertarPrimero(nombre string, descripcion string, contacto int, calificacion int) {
+func (lista *ListaTienda) InsertarPrimero(nombre string, descripcion string, contacto string, calificacion int) {
 	nuevaTienda := &Tienda{nombre, descripcion, contacto, calificacion, nil, nil}
 	lista.primero.anterior = nuevaTienda
 	nuevaTienda.siguiente = lista.primero
@@ -86,7 +118,7 @@ func (lista *ListaTienda) InsertarPrimero(nombre string, descripcion string, con
 	lista.elementos += 1
 }
 
-func (lista *ListaTienda) InsertarMedio(nombre string, descripcion string, contacto int, calificacion int, dir1 *Tienda, dir2 *Tienda) {
+func (lista *ListaTienda) InsertarMedio(nombre string, descripcion string, contacto string, calificacion int, dir1 *Tienda, dir2 *Tienda) {
 	nuevaTienda := &Tienda{nombre, descripcion, contacto, calificacion, nil, nil}
 	dir1.siguiente = nuevaTienda
 	dir2.anterior = nuevaTienda
@@ -95,7 +127,7 @@ func (lista *ListaTienda) InsertarMedio(nombre string, descripcion string, conta
 	lista.elementos += 1
 }
 
-func (lista *ListaTienda) InsertarTienda(nombre string, descripcion string, contacto int, calificacion int) {
+func (lista *ListaTienda) InsertarTienda(nombre string, descripcion string, contacto string, calificacion int) {
 	tamano := lista.elementos
 	if tamano == 0 {
 		nuevaTienda := &Tienda{nombre, descripcion, contacto, calificacion, nil, nil}

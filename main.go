@@ -27,6 +27,10 @@ func main() {
 
 func HelloWorld(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("Esto es una peticion de tipo get")
+	var matriz = Datos.TransformarDatos()
+	fmt.Println(matriz)
+	matriz[4].MostrarDatos()
+	matriz[3].MostrarDatos()
 }
 
 func GetData(w http.ResponseWriter, req *http.Request) {
@@ -39,21 +43,21 @@ func GetData(w http.ResponseWriter, req *http.Request) {
 	fmt.Print(Datos)
 	copia := Datos
 	fmt.Println(copia)
-
 }
 
+/*
 func alter() {
 	var clasificacion [10][26][5]EstructurasCreadas.ListaTienda
 	//fmt.Println(clasificacion)
 	//fmt.Println(len(clasificacion))
 
-	/*for i := 0; i <27; i++ {
+	for i := 0; i <27; i++ {
 		for j := 0; j <10; j++ {
 			for k := 0; k <5; k++ {
 				fmt.Println(clasificacion[i][j][k])
 			}
 		}
-	}*/
+	}
 
 	//clasificacion[0][0][0].InsertarTienda("Genetik", "Tienda en Linea",41283319,5)
 	//clasificacion[0][0][0].InsertarTienda("Genetiks", "Tienda en Linea",41283319,5)
@@ -76,6 +80,7 @@ func alter() {
 	var arreglo = LinealizarRM(10, clasificacion)
 	fmt.Println(arreglo)
 }
+*/
 
 func LinealizarRM(valor int, matriz [10][26][5]EstructurasCreadas.ListaTienda) [3000]EstructurasCreadas.ListaTienda {
 	var arreglo [3000]EstructurasCreadas.ListaTienda

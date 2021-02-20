@@ -7,9 +7,12 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 var Datos EstructurasCreadas.Data
+var Vector []EstructurasCreadas.ListaTienda
+var TamaVec = 0
 
 func main() {
 	//ejemplo()
@@ -17,14 +20,14 @@ func main() {
 	router := mux.NewRouter()
 
 	//Endpoints
-	router.HandleFunc("/getHello", HelloWorld).Methods("GET")
-	//router.HandleFunc("/getName", HelloWorld).Methods("GET")
-	router.HandleFunc("/getHello", GetData).Methods("POST")
-
+	//router.HandleFunc("/getHello", HelloWorld).Methods("GET")
+	router.HandleFunc("/cargartienda", CargarTienda).Methods("POST")
+	router.HandleFunc("/id/{id:[0-9]+}", BusquedaPosicion).Methods("GET")
 	// iniciar el servidor en el puerto 7000
 	log.Fatal(http.ListenAndServe(":7000", router))
 }
 
+/*
 func HelloWorld(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("Esto es una peticion de tipo get")
 	var matriz = Datos.TransformarDatos()
@@ -32,17 +35,36 @@ func HelloWorld(w http.ResponseWriter, req *http.Request) {
 	matriz[4].MostrarDatos()
 	matriz[3].MostrarDatos()
 }
+*/
 
-func GetData(w http.ResponseWriter, req *http.Request) {
+func CargarTienda(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("Esto es una peticion de tipo post")
 	_ = json.NewDecoder(req.Body).Decode(&Datos)
-	//_ = json.NewEncoder(w).Encode(Datos)
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
-	encoder.Encode(Datos)
-	fmt.Print(Datos)
-	copia := Datos
-	fmt.Println(copia)
+	_ = encoder.Encode("Datos cargados con exito")
+	fmt.Println(Datos)
+	Vector = Datos.TransformarDatos()
+	fmt.Println(Vector)
+	TamaVec = len(Vector)
+}
+
+func BusquedaPosicion(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if TamaVec == 0 {
+		_ = encoder.Encode("Los datos no han sido ingresados")
+	} else {
+		fmt.Println("Esto es una peticion de tipo get")
+		vars := mux.Vars(req)
+		id, _ := strconv.Atoi(vars["id"])
+		if id >= TamaVec {
+			_ = encoder.Encode("El indice supera el tamaño de la matriz")
+		} else {
+			var lista = Vector[id].VectorElementos()
+			_ = encoder.Encode(lista)
+		}
+	}
 }
 
 /*

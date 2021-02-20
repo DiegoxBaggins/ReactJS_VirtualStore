@@ -86,6 +86,20 @@ func (lista *ListaTienda) MostrarDatos() {
 	}
 }
 
+func (lista *ListaTienda) VectorElementos() []Store {
+	var vector = make([]Store, lista.elementos)
+	auxiliar := lista.primero
+	for i := 0; i < lista.elementos; i++ {
+		tienda := *auxiliar
+		vector[i].Nombre = tienda.nombre
+		vector[i].Contacto = tienda.contacto
+		vector[i].Descripcion = tienda.descripcion
+		vector[i].Calificacion = float64(tienda.calificacion)
+		auxiliar = tienda.siguiente
+	}
+	return vector
+}
+
 /*
 func (lista *ListaTienda)InsertarTienda (nombre string, descripcion string, contacto int, calificacion int) {
 	nuevaTienda := &Tienda{nombre, descripcion,contacto,calificacion, nil, nil}

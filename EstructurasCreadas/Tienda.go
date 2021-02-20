@@ -31,6 +31,12 @@ type StoreBus struct {
 	Calificacion float64 `json:"Calificacion,omitempty"`
 }
 
+type StoreElim struct {
+	Nombre       string  `json:"Nombre,omitempty"`
+	Departamento string  `json:"Categoria,omitempty"`
+	Calificacion float64 `json:"Calificacion,omitempty"`
+}
+
 func (info *Data) CalcularTamanos() ([]string, []string) {
 	numInd := len(info.Datos)
 	numDep := len(info.Datos[0].Departamentos)
@@ -131,6 +137,34 @@ func (lista *ListaTienda) BuscarTienda(nombre string) (Store, int) {
 		auxiliar = tienda.siguiente
 	}
 	return store, 0
+}
+
+func (lista *ListaTienda) EliminarTienda(nombre string) {
+	auxiliar := lista.primero
+	for i := 0; i < lista.elementos; i++ {
+		tienda := *auxiliar
+		if tienda.nombre == nombre {
+			if lista.primero == auxiliar {
+				lista.primero = tienda.siguiente
+				tienda.siguiente.anterior = nil
+				tienda.siguiente = nil
+			} else {
+				if lista.ultimo == auxiliar {
+					lista.ultimo = tienda.anterior
+					tienda.anterior.siguiente = nil
+					tienda.anterior = nil
+				} else {
+					tienda.anterior.siguiente = tienda.siguiente
+					tienda.siguiente.anterior = tienda.anterior
+					tienda.siguiente = nil
+					tienda.anterior = nil
+				}
+			}
+			lista.elementos -= 1
+			break
+		}
+		auxiliar = tienda.siguiente
+	}
 }
 
 /*

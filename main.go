@@ -26,6 +26,7 @@ func main() {
 	router.HandleFunc("/cargartienda", CargarTienda).Methods("POST")
 	router.HandleFunc("/id/{id:[0-9]+}", BusquedaPosicion).Methods("GET")
 	router.HandleFunc("/TiendaEspecifica", TiendaEspecifica).Methods("POST")
+	router.HandleFunc("/Eliminar", EliminarTienda).Methods("DELETE")
 	// iniciar el servidor en el puerto 7000
 	log.Fatal(http.ListenAndServe(":7000", router))
 }
@@ -78,6 +79,38 @@ func TiendaEspecifica(w http.ResponseWriter, req *http.Request) {
 					_ = encoder.Encode("Tienda no existe")
 				} else {
 					_ = encoder.Encode(store)
+				}
+			}
+		}
+	}
+}
+
+func EliminarTienda(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if TamaVec == 0 {
+		_ = encoder.Encode("Los datos no han sido ingresados")
+	} else {
+		fmt.Println("Esto es una peticion de tipo post")
+		var tienda EstructurasCreadas.StoreElim
+		_ = json.NewDecoder(req.Body).Decode(&tienda)
+		fmt.Println(tienda)
+		first1 := tienda.Nombre[0:1]
+		fmt.Println(first1)
+		if tienda.Calificacion > 5 || tienda.Calificacion < 0 {
+			_ = encoder.Encode("Calificacion no valida")
+		} else {
+			indice, dept, err1 := EncontrarIndices(tienda.Departamento, first1)
+			if err1 == 1 {
+				_ = encoder.Encode("El Departamento no existe")
+			} else {
+				elemento := int(tienda.Calificacion) + 5*(indice+(len(Indices)*dept)) - 1
+				store, err := Vector[elemento].BuscarTienda(tienda.Nombre)
+				if err == 0 {
+					_ = encoder.Encode("Tienda no existe")
+				} else {
+					_ = encoder.Encode(store)
+					Vector[elemento].EliminarTienda(tienda.Nombre)
 				}
 			}
 		}

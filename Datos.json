@@ -1,0 +1,65 @@
+{
+    "Datos": [
+        {
+            "Indice": "A",
+            "Departamentos": [
+                {
+                    "Nombre": "Deportes",
+                    "Tiendas": [
+                        {
+                            "Nombre": "Amador",
+                            "Descripcion": "es una empresa alemana fabricante de accesorios, ropa y calzado deportivo, cuya sede central está en Herzogenaurach, Alemania",
+                            "Contacto": "5588-9988",
+                            "Calificacion": 4
+                        },
+                        {
+                            "Nombre": "Armados",
+                            "Descripcion": "Equipo extremo",
+                            "Contacto": "8995222",
+                            "Calificacion": 5
+                        }
+                    ]
+                },
+                {
+                    "Nombre": "Comida",
+                    "Tiendas": [
+                        {
+                            "Nombre": "A comer todo",
+                            "Descripcion": "todo lo que puedan pedir por un dollar",
+                            "Contacto": "559999",
+                            "Calificacion": 5
+                        }
+                    ]
+                },
+                {
+                    "Nombre": "celulares",
+                    "Tiendas": []
+                }
+            ]
+        },
+        {
+            "Indice": "B",
+            "Departamentos": [
+                {
+                    "Nombre": "Deportes",
+                    "Tiendas": []
+                },
+                {
+                    "Nombre": "Comida",
+                    "Tiendas": []
+                },
+                {
+                    "Nombre": "celulares",
+                    "Tiendas": [
+                        {
+                            "Nombre": "Bayoneta",
+                            "Descripcion": "Telefonos militares",
+                            "Contacto": "bayoneta@gmail.com",
+                            "Calificacion": 5
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

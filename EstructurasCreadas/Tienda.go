@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+//estructuras y metodos para el manejo de datos del json
 type Data struct {
 	Datos []Alfabeto
 }
@@ -45,7 +46,7 @@ func (info *Data) CalcularTamanos() ([]string, []string) {
 	for indice := 0; indice < numInd; indice++ {
 		vecInd[indice] = info.Datos[indice].Indice
 	}
-	for departamento := 0; departamento < numInd; departamento++ {
+	for departamento := 0; departamento < numDep; departamento++ {
 		vecDep[departamento] = info.Datos[0].Departamentos[departamento].Nombre
 	}
 	return vecInd, vecDep
@@ -78,6 +79,30 @@ func (info *Data) TransformarDatos() []ListaTienda {
 	}
 	return arreglo
 }
+
+func (info *Data) RegresarMatriz(datos []ListaTienda, indices []string, departamentos []string) {
+	numInd := len(indices)
+	numDep := len(departamentos)
+	arregloInd := make([]Alfabeto, numInd)
+	info.Datos = arregloInd
+	elemento := 0
+	for indice := 0; indice < numInd; indice++ {
+		info.Datos[indice].Indice = indices[indice]
+		arregloDept := make([]Tipo, numDep)
+		for departamento := 0; departamento < numDep; departamento++ {
+			arregloDept[departamento].Nombre = departamentos[departamento]
+			arregloTiendas := make([]Store, 0)
+			for calificacion := 0; calificacion < 5; calificacion++ {
+				elemento = calificacion + 5*(indice+(numInd*departamento))
+				arregloTiendas = append(arregloTiendas, datos[elemento].VectorElementos()...)
+			}
+			arregloDept[departamento].Tiendas = arregloTiendas
+		}
+		info.Datos[indice].Departamentos = arregloDept
+	}
+}
+
+//estructuras para el vector y sus metodos
 
 type Tienda struct {
 	nombre       string
@@ -183,6 +208,7 @@ func (lista *ListaTienda)InsertarTienda (nombre string, descripcion string, cont
 }
 */
 
+//metodos para insertar en la lista ya ordenado
 func (lista *ListaTienda) InsertarUltimo(nombre string, descripcion string, contacto string, calificacion int) {
 	nuevaTienda := &Tienda{nombre, descripcion, contacto, calificacion, nil, nil}
 	lista.ultimo.siguiente = nuevaTienda

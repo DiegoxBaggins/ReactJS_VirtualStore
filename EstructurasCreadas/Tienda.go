@@ -25,8 +25,24 @@ type Store struct {
 	Calificacion float64 `json:"Calificacion,omitempty"`
 }
 
-func (info *Data) CalcularTamanos() (int, int) {
-	return len(info.Datos), len(info.Datos[0].Departamentos)
+type StoreBus struct {
+	Departamento string  `json:"Departamento,omitempty"`
+	Nombre       string  `json:"Nombre,omitempty"`
+	Calificacion float64 `json:"Calificacion,omitempty"`
+}
+
+func (info *Data) CalcularTamanos() ([]string, []string) {
+	numInd := len(info.Datos)
+	numDep := len(info.Datos[0].Departamentos)
+	vecInd := make([]string, numInd)
+	vecDep := make([]string, numDep)
+	for indice := 0; indice < numInd; indice++ {
+		vecInd[indice] = info.Datos[indice].Indice
+	}
+	for departamento := 0; departamento < numInd; departamento++ {
+		vecDep[departamento] = info.Datos[0].Departamentos[departamento].Nombre
+	}
+	return vecInd, vecDep
 }
 
 func (info *Data) TransformarDatos() []ListaTienda {
@@ -98,6 +114,23 @@ func (lista *ListaTienda) VectorElementos() []Store {
 		auxiliar = tienda.siguiente
 	}
 	return vector
+}
+
+func (lista *ListaTienda) BuscarTienda(nombre string) (Store, int) {
+	var store Store
+	auxiliar := lista.primero
+	for i := 0; i < lista.elementos; i++ {
+		tienda := *auxiliar
+		if tienda.nombre == nombre {
+			store.Calificacion = float64(tienda.calificacion)
+			store.Nombre = tienda.nombre
+			store.Descripcion = tienda.descripcion
+			store.Contacto = tienda.contacto
+			return store, 1
+		}
+		auxiliar = tienda.siguiente
+	}
+	return store, 0
 }
 
 /*

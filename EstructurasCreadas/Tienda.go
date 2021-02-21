@@ -2,6 +2,7 @@ package EstructurasCreadas
 
 import (
 	"fmt"
+	"strconv"
 )
 
 //estructuras y metodos para el manejo de datos del json
@@ -190,6 +191,32 @@ func (lista *ListaTienda) EliminarTienda(nombre string) {
 		}
 		auxiliar = tienda.siguiente
 	}
+}
+
+func (lista *ListaTienda) GraficarLista(indice int, num int) (string, int) {
+	if lista.elementos == 0 {
+		return "", num
+	}
+	var graph string = ""
+	var nodes string = ""
+	var pointers string = ""
+	auxiliar := lista.primero
+	for i := 0; i < lista.elementos; i++ {
+		tienda := *auxiliar
+		nodes += "NodeA" + strconv.Itoa(num) + "[label=\"" + tienda.nombre + "\"]\n"
+		graph += "NodeA" + strconv.Itoa(num) + "\n"
+		if lista.primero == auxiliar {
+			pointers += "Node" + strconv.Itoa(indice) + "->NodeA" + strconv.Itoa(num) + ";\n"
+			pointers += "NodeA" + strconv.Itoa(num) + "->Node" + strconv.Itoa(indice) + ";\n"
+		} else {
+			pointers += "NodeA" + strconv.Itoa(num-1) + "->NodeA" + strconv.Itoa(num) + ";\n"
+			pointers += "NodeA" + strconv.Itoa(num) + "->NodeA" + strconv.Itoa(num-1) + ";\n"
+		}
+		auxiliar = tienda.siguiente
+		num += 1
+	}
+	graph += nodes + pointers
+	return graph, num
 }
 
 /*

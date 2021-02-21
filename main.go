@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
 	"strconv"
 )
 
@@ -27,6 +29,7 @@ func main() {
 	router.HandleFunc("/TiendaEspecifica", TiendaEspecifica).Methods("POST")
 	router.HandleFunc("/Eliminar", EliminarTienda).Methods("DELETE")
 	router.HandleFunc("/guardar", GuardarDatos).Methods("GET")
+	router.HandleFunc("/getArreglo", CrearGrafo).Methods("GET")
 	// iniciar el servidor en el puerto 3000
 	log.Fatal(http.ListenAndServe(":3000", router))
 }
@@ -161,6 +164,51 @@ func GuardarDatos(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
+}
+
+func CrearGrafo(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if TamaVec == 0 {
+		_ = encoder.Encode("Los datos no han sido ingresados")
+	} else {
+		var graph = "digraph List {\n"
+		graph += "rankdir=TB;\n"
+		graph += "node [shape = record, color=black, style=filled, fillcolor=yellow];\n subgraph {\n"
+		rank := "{rank = same; "
+		var nodes = ""
+		var pointers = ""
+		for arreglo := 0; arreglo < len(Vector); arreglo++ {
+			nodes += "Node" + strconv.Itoa(arreglo) + "[label=\"" + strconv.Itoa(arreglo) + "\"]\n"
+			rank += "Node" + strconv.Itoa(arreglo) + "; "
+			if (arreglo + 1) != len(Vector) {
+				pointers += "Node" + strconv.Itoa(arreglo) + "->Node" + strconv.Itoa(arreglo+1) + ";\n"
+			}
+		}
+		rank += "}"
+		graph += rank + "\n" + nodes + "\n" + pointers
+		numero := 0
+		for arreglo := 0; arreglo < len(Vector); arreglo++ {
+			stringLista, num := Vector[arreglo].GraficarLista(arreglo, numero)
+			graph += stringLista
+			numero = num
+		}
+		graph += "\n}\n}"
+		//fmt.Println(graph)
+		data := []byte(graph)
+		err := ioutil.WriteFile("graph.dot", data, 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+		path, _ := exec.LookPath("dot")
+		cmd, _ := exec.Command(path, "-Tpng", "graph.dot").Output()
+		mode := int(0777)
+		err = ioutil.WriteFile("Arreglo.png", cmd, os.FileMode(mode))
+		if err != nil {
+			log.Fatal(err)
+		}
+		_ = encoder.Encode("Grafico con exito")
 	}
 }
 

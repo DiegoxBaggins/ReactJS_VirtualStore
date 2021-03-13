@@ -202,9 +202,9 @@ func CrearGrafo(w http.ResponseWriter, req *http.Request) {
 			log.Fatal(err)
 		}
 		path, _ := exec.LookPath("dot")
-		cmd, _ := exec.Command(path, "-Tpng", "graph.dot").Output()
+		cmd, _ := exec.Command(path, "-Tpdf", "graph.dot").Output()
 		mode := int(0777)
-		err = ioutil.WriteFile("Arreglo.png", cmd, os.FileMode(mode))
+		err = ioutil.WriteFile("Arreglo.pdf", cmd, os.FileMode(mode))
 		if err != nil {
 			log.Fatal(err)
 		}

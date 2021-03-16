@@ -116,6 +116,11 @@ type Tienda struct {
 	logo         string
 	anterior     *Tienda
 	siguiente    *Tienda
+	productos    *ArbolProd
+}
+
+func NewTienda(nombre string, desc string, cont string, cal int, logo string) *Tienda {
+	return &Tienda{nombre, desc, cont, cal, logo, nil, nil, NewArbol()}
 }
 
 type ListaTienda struct {
@@ -153,7 +158,7 @@ func (lista *ListaTienda) VectorElementos() []Store {
 	return vector
 }
 
-func (lista *ListaTienda) BuscarTienda(nombre string) (Store, int) {
+func (lista *ListaTienda) BuscarStore(nombre string) (Store, int) {
 	var store Store
 	auxiliar := lista.primero
 	for i := 0; i < lista.elementos; i++ {
@@ -169,6 +174,18 @@ func (lista *ListaTienda) BuscarTienda(nombre string) (Store, int) {
 		auxiliar = tienda.siguiente
 	}
 	return store, 0
+}
+
+func (lista *ListaTienda) BuscarTienda(nombre string) (*Tienda, int) {
+	auxiliar := lista.primero
+	for i := 0; i < lista.elementos; i++ {
+		tienda := auxiliar
+		if tienda.nombre == nombre {
+			return tienda, 1
+		}
+		auxiliar = tienda.siguiente
+	}
+	return nil, 0
 }
 
 func (lista *ListaTienda) EliminarTienda(nombre string) {
@@ -243,7 +260,7 @@ func (lista *ListaTienda)InsertarTienda (nombre string, descripcion string, cont
 
 //metodos para insertar en la lista ya ordenado
 func (lista *ListaTienda) InsertarUltimo(nombre string, descripcion string, contacto string, calificacion int, logo string) {
-	nuevaTienda := &Tienda{nombre, descripcion, contacto, calificacion, logo, nil, nil}
+	nuevaTienda := NewTienda(nombre, descripcion, contacto, calificacion, logo)
 	lista.ultimo.siguiente = nuevaTienda
 	nuevaTienda.anterior = lista.ultimo
 	lista.ultimo = nuevaTienda
@@ -251,7 +268,7 @@ func (lista *ListaTienda) InsertarUltimo(nombre string, descripcion string, cont
 }
 
 func (lista *ListaTienda) InsertarPrimero(nombre string, descripcion string, contacto string, calificacion int, logo string) {
-	nuevaTienda := &Tienda{nombre, descripcion, contacto, calificacion, logo, nil, nil}
+	nuevaTienda := NewTienda(nombre, descripcion, contacto, calificacion, logo)
 	lista.primero.anterior = nuevaTienda
 	nuevaTienda.siguiente = lista.primero
 	lista.primero = nuevaTienda
@@ -259,7 +276,7 @@ func (lista *ListaTienda) InsertarPrimero(nombre string, descripcion string, con
 }
 
 func (lista *ListaTienda) InsertarMedio(nombre string, descripcion string, contacto string, calificacion int, logo string, dir1 *Tienda, dir2 *Tienda) {
-	nuevaTienda := &Tienda{nombre, descripcion, contacto, calificacion, logo, nil, nil}
+	nuevaTienda := NewTienda(nombre, descripcion, contacto, calificacion, logo)
 	dir1.siguiente = nuevaTienda
 	dir2.anterior = nuevaTienda
 	nuevaTienda.siguiente = dir2
@@ -270,7 +287,7 @@ func (lista *ListaTienda) InsertarMedio(nombre string, descripcion string, conta
 func (lista *ListaTienda) InsertarTienda(nombre string, descripcion string, contacto string, calificacion int, logo string) {
 	tamano := lista.elementos
 	if tamano == 0 {
-		nuevaTienda := &Tienda{nombre, descripcion, contacto, calificacion, logo, nil, nil}
+		nuevaTienda := NewTienda(nombre, descripcion, contacto, calificacion, logo)
 		lista.ultimo = nuevaTienda
 		lista.primero = nuevaTienda
 		lista.elementos += 1

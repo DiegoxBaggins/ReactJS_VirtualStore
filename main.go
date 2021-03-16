@@ -15,6 +15,7 @@ import (
 
 var Datos EstructurasCreadas.Data
 var Vector []EstructurasCreadas.ListaTienda
+var Inventario EstructurasCreadas.Invent
 var TamaVec = 0
 var Indices []string
 var Departamentos []string
@@ -22,6 +23,21 @@ var Departamentos []string
 func main() {
 	//enrutador denominado router
 	router := mux.NewRouter()
+	arbol := EstructurasCreadas.NewArbol()
+	pruebaArbol(2, arbol)
+	pruebaArbol(3, arbol)
+	pruebaArbol(4, arbol)
+	pruebaArbol(5, arbol)
+	pruebaArbol(6, arbol)
+	pruebaArbol(1, arbol)
+	pruebaArbol(10, arbol)
+	pruebaArbol(15, arbol)
+	pruebaArbol(25, arbol)
+	pruebaArbol(1, arbol)
+	pruebaArbol(6, arbol)
+	pruebaArbol(15, arbol)
+	pruebaArbol(15, arbol)
+	arbol.Print()
 
 	//Endpoints
 	router.HandleFunc("/cargartienda", CargarTienda).Methods("POST")
@@ -30,8 +46,23 @@ func main() {
 	router.HandleFunc("/Eliminar", EliminarTienda).Methods("DELETE")
 	router.HandleFunc("/guardar", GuardarDatos).Methods("GET")
 	router.HandleFunc("/getArreglo", CrearGrafo).Methods("GET")
+	router.HandleFunc("/cargarInv", CargarInven).Methods("POST")
 	// iniciar el servidor en el puerto 3000
 	log.Fatal(http.ListenAndServe(":3000", router))
+}
+
+func CargarInven(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("Esto es una peticion de tipo post")
+	_ = json.NewDecoder(req.Body).Decode(&Inventario)
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	_ = encoder.Encode("Datos cargados con exito")
+	fmt.Println(Inventario)
+	Inventario.SacarInventario(Vector, Indices, Departamentos)
+	inventario := Vector
+	fmt.Println(inventario)
+	TamaVec = len(Vector)
+	Indices, Departamentos = Datos.CalcularTamanos()
 }
 
 func CargarTienda(w http.ResponseWriter, req *http.Request) {
@@ -67,7 +98,7 @@ func TiendaEspecifica(w http.ResponseWriter, req *http.Request) {
 				_ = encoder.Encode("El Departamento no existe")
 			} else {
 				elemento := int(tienda.Calificacion) + 5*(indice+(len(Indices)*dept)) - 1
-				store, err := Vector[elemento].BuscarTienda(tienda.Nombre)
+				store, err := Vector[elemento].BuscarStore(tienda.Nombre)
 				if err == 0 {
 					_ = encoder.Encode("Tienda no existe")
 				} else {
@@ -98,7 +129,7 @@ func EliminarTienda(w http.ResponseWriter, req *http.Request) {
 				_ = encoder.Encode("El Departamento no existe")
 			} else {
 				elemento := int(tienda.Calificacion) + 5*(indice+(len(Indices)*dept)) - 1
-				store, err := Vector[elemento].BuscarTienda(tienda.Nombre)
+				store, err := Vector[elemento].BuscarStore(tienda.Nombre)
 				if err == 0 {
 					_ = encoder.Encode("Tienda no existe")
 				} else {
@@ -227,4 +258,9 @@ func LinealizarRM(valor int, matriz [10][26][5]EstructurasCreadas.ListaTienda) [
 		fmt.Println(arreglo[objeto])
 	}
 	return arreglo
+}
+
+func pruebaArbol(codigo float64, arbol *EstructurasCreadas.ArbolProd) {
+	product := EstructurasCreadas.Product{"h", codigo, "h", 10, 10, "h"}
+	arbol.Insertar(product)
 }

@@ -47,6 +47,7 @@ func main() {
 	router.HandleFunc("/guardar", GuardarDatos).Methods("GET")
 	router.HandleFunc("/getArreglo", CrearGrafo).Methods("GET")
 	router.HandleFunc("/cargarInv", CargarInven).Methods("POST")
+	router.HandleFunc("/tiendas", DevolverTiendas).Methods("GET")
 	// iniciar el servidor en el puerto 3000
 	log.Fatal(http.ListenAndServe(":3000", router))
 }
@@ -243,6 +244,25 @@ func CrearGrafo(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func DevolverTiendas(w http.ResponseWriter, req *http.Request){
+	setupCorsResponse(&w, req)
+	arregloTiendas := make([]EstructurasCreadas.Store, 0)
+	for i:= 0; i< len(Vector); i ++ {
+		arregloTiendas = append(arregloTiendas, Vector[i].ReturnListStore()...)
+	}
+	for i:= 0; i< len(arregloTiendas); i ++ {
+		fmt.Println(arregloTiendas[i].Nombre)
+	}
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if TamaVec == 0 {
+		_ = encoder.Encode("Los datos no han sido ingresados")
+	} else {
+		fmt.Println("Esto es una peticion de tipo get")
+		_ = encoder.Encode(arregloTiendas)
+	}
+}
+
 func LinealizarRM(valor int, matriz [10][26][5]EstructurasCreadas.ListaTienda) [3000]EstructurasCreadas.ListaTienda {
 	var arreglo [3000]EstructurasCreadas.ListaTienda
 	for fila := 0; fila < valor; fila++ {
@@ -263,4 +283,10 @@ func LinealizarRM(valor int, matriz [10][26][5]EstructurasCreadas.ListaTienda) [
 func pruebaArbol(codigo float64, arbol *EstructurasCreadas.ArbolProd) {
 	product := EstructurasCreadas.Product{"h", codigo, "h", 10, 10, "h"}
 	arbol.Insertar(product)
+}
+
+func setupCorsResponse(w *http.ResponseWriter, req *http.Request) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Authorization")
 }

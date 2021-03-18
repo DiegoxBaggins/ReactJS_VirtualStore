@@ -7,16 +7,17 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
 import SeccionPrueba from "./components/SeccionPrueba";
+import Router from "./Router";
 
 function App() {
   return (
     <div className="App">
-        <Header />
+
 
 
         <div className="center">
-
-            <Paginas />
+            <Router />
+            {/*<Paginas />*/}
 
             <Sidebar />
             <div className="clearfix"> </div>

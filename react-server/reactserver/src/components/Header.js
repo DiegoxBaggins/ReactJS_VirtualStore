@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
 import logo from '../assets/images/logo.png'
+import { NavLink } from 'react-router-dom';
+
 class Header extends Component{
 
     render(){
@@ -17,19 +19,19 @@ class Header extends Component{
                     <nav id="menu">
                         <ul>
                             <li>
-                                <a href="index.html">Inicio</a>
+                                <NavLink to="/Home" activeClassName="active">Inicio</NavLink>
                             </li>
                             <li>
-                                <a href="blog.html">Carrito</a>
+                                <NavLink to="/Home" activeClassName="active">Carrito</NavLink>
                             </li>
                             <li>
-                                <a href="formulario.html">Administrador</a>
+                                <NavLink to="/ruta-prueba" activeClassName="active"> Administrador</NavLink>
                             </li>
                         </ul>
                     </nav>
                     { /*LIMPIAR FLOTADOS */}
 
-                    <div className="clearfix"></div>
+                    <div className="clearfix"> </div>
                 </div>
             </header>
         );

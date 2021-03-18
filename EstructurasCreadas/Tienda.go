@@ -119,6 +119,19 @@ type Tienda struct {
 	productos    *ArbolProd
 }
 
+func (tienda *Tienda) ReturnStore() Store{
+	return Store{tienda.nombre, tienda.descripcion,tienda.contacto, float64(tienda.calificacion), tienda.logo}
+}
+
+func (lista *ListaTienda) ReturnListStore() []Store{
+	arreglo := make([]Store, lista.elementos)
+	aux := lista.primero
+	for i:=0; i<lista.elementos; i ++ {
+		arreglo[i] = aux.ReturnStore()
+	}
+	return arreglo
+}
+
 func NewTienda(nombre string, desc string, cont string, cal int, logo string) *Tienda {
 	return &Tienda{nombre, desc, cont, cal, logo, nil, nil, NewArbol()}
 }

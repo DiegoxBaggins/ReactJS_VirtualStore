@@ -35,7 +35,6 @@ class SeccionPrueba extends Component{
                 </p>
 
                 <section className="componentes" >
-                    <Paginas/>
                 </section>
             </section>
         );

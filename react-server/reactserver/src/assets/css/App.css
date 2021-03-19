@@ -185,6 +185,19 @@ body {
   margin-top: 10px;
 }
 
+.btn-upload{
+  background: skyblue;
+  color: black;
+  padding: 15px;
+  font-weight: bold;
+  font-size: 14px;
+  text-decoration: none;
+  transition: 300ms all;
+  border: none;
+  cursor:pointer;
+  margin: 15px;
+}
+
 .btn{
   display: block;
   background: black;

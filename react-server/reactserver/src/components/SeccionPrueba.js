@@ -1,6 +1,4 @@
 import React, {Component} from 'react';
-import logo from "../assets/images/logo.svg";
-import Paginas from "./Paginas";
 
 class SeccionPrueba extends Component{
 

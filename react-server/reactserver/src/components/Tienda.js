@@ -14,7 +14,7 @@ class Tienda extends Component{
                 <h2>{Nombre}</h2>
                 <h4>{Descripcion}</h4>
                 <h4>Calificacion: {Calificacion} Contacto: {Contacto}</h4>
-                <div className="clearfix"></div>
+                <div className="clearfix"> </div>
             </article>
         )
     }

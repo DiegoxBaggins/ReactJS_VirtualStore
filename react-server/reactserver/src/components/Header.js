@@ -27,6 +27,9 @@ class Header extends Component{
                             <li>
                                 <NavLink to="/ruta-prueba" activeClassName="active"> Administrador</NavLink>
                             </li>
+                            <li>
+                                <NavLink to="/uploads" activeClassName="active"> Uploads</NavLink>
+                            </li>
                         </ul>
                     </nav>
                     { /*LIMPIAR FLOTADOS */}

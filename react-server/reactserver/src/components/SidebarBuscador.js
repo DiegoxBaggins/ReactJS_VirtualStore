@@ -1,17 +1,12 @@
 import React, {Component} from 'react';
 
-class Sidebar extends Component{
+class SidebarBuscador extends Component{
 
     render(){
 
         return (
             <aside id="sidebar">
-                {/*
-                <div id="nav-blog" className="sidebar-item">
-                    <h3>Agregar JSON tiendas</h3>
-                    <a href="#" className="btn btn-success">Ir</a>
-                </div>
-                */}
+
                 <div id="search" className="sidebar-item">
                     <h3>Buscar tienda</h3>
                     <form>
@@ -24,4 +19,4 @@ class Sidebar extends Component{
     }
 }
 
-export default Sidebar;
+export default SidebarBuscador;

@@ -2,15 +2,18 @@ package main
 
 import (
 	"Proyecto-moduls/EstructurasCreadas"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 var Datos EstructurasCreadas.Data
@@ -48,22 +51,10 @@ func main() {
 	router.HandleFunc("/getArreglo", CrearGrafo).Methods("GET")
 	router.HandleFunc("/cargarInv", CargarInven).Methods("POST")
 	router.HandleFunc("/tiendas", DevolverTiendas).Methods("GET")
+	router.HandleFunc("/cargartiendas", CargarTiendasAPI).Methods("POST")
+	router.HandleFunc("/cargarinventario", CargarInvenAPI).Methods("POST")
 	// iniciar el servidor en el puerto 3000
 	log.Fatal(http.ListenAndServe(":3000", router))
-}
-
-func CargarInven(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("Esto es una peticion de tipo post")
-	_ = json.NewDecoder(req.Body).Decode(&Inventario)
-	encoder := json.NewEncoder(w)
-	encoder.SetIndent("", "    ")
-	_ = encoder.Encode("Datos cargados con exito")
-	fmt.Println(Inventario)
-	Inventario.SacarInventario(Vector, Indices, Departamentos)
-	inventario := Vector
-	fmt.Println(inventario)
-	TamaVec = len(Vector)
-	Indices, Departamentos = Datos.CalcularTamanos()
 }
 
 func CargarTienda(w http.ResponseWriter, req *http.Request) {
@@ -263,6 +254,22 @@ func DevolverTiendas(w http.ResponseWriter, req *http.Request){
 	}
 }
 
+func CargarInven(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if TamaVec == 0 {
+		_ = encoder.Encode("Los datos no han sido ingresados")
+	} else {
+		fmt.Println("Esto es una peticion de tipo post")
+		_ = json.NewDecoder(req.Body).Decode(&Inventario)
+		_ = encoder.Encode("Datos cargados con exito")
+		fmt.Println(Inventario)
+		Inventario.SacarInventario(Vector, Indices, Departamentos)
+		inventario := Vector
+		fmt.Println(inventario)
+	}
+}
+
 func LinealizarRM(valor int, matriz [10][26][5]EstructurasCreadas.ListaTienda) [3000]EstructurasCreadas.ListaTienda {
 	var arreglo [3000]EstructurasCreadas.ListaTienda
 	for fila := 0; fila < valor; fila++ {
@@ -289,4 +296,60 @@ func setupCorsResponse(w *http.ResponseWriter, req *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Authorization")
+}
+
+// metodos de la api rest
+
+func CargarTiendasAPI(w http.ResponseWriter, req *http.Request) {
+	setupCorsResponse(&w, req)
+	fmt.Println("Esto es una peticion de tipo post")
+	var buf bytes.Buffer
+	file, header, err := req.FormFile("myFile")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	name := strings.Split(header.Filename, ".")
+	fmt.Printf("File name %s\n", name[0])
+	io.Copy(&buf, file)
+	contents := buf.String()
+	fmt.Println(contents)
+	_ = json.Unmarshal(buf.Bytes(), &Datos)
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	_ = encoder.Encode("Datos cargados con exito")
+	fmt.Println(Datos)
+	Vector = Datos.TransformarDatos()
+	fmt.Println(Vector)
+	TamaVec = len(Vector)
+	Indices, Departamentos = Datos.CalcularTamanos()
+}
+
+func CargarInvenAPI(w http.ResponseWriter, req *http.Request) {
+	setupCorsResponse(&w, req)
+	fmt.Println("Esto es una peticion de tipo post")
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if TamaVec == 0 {
+		_ = encoder.Encode("Los datos no han sido ingresados")
+	} else {
+		fmt.Println("Esto es una peticion de tipo post")
+		var buf bytes.Buffer
+		file, header, err := req.FormFile("myFile")
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+		name := strings.Split(header.Filename, ".")
+		fmt.Printf("File name %s\n", name[0])
+		io.Copy(&buf, file)
+		contents := buf.String()
+		fmt.Println(contents)
+		_ = json.Unmarshal(buf.Bytes(), &Inventario)
+		_ = encoder.Encode("Datos cargados con exito")
+		fmt.Println(Inventario)
+		Inventario.SacarInventario(Vector, Indices, Departamentos)
+		inventario := Vector
+		fmt.Println(inventario)
+	}
 }

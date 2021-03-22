@@ -26,21 +26,6 @@ var Departamentos []string
 func main() {
 	//enrutador denominado router
 	router := mux.NewRouter()
-	arbol := EstructurasCreadas.NewArbol()
-	pruebaArbol(2, arbol)
-	pruebaArbol(3, arbol)
-	pruebaArbol(4, arbol)
-	pruebaArbol(5, arbol)
-	pruebaArbol(6, arbol)
-	pruebaArbol(1, arbol)
-	pruebaArbol(10, arbol)
-	pruebaArbol(15, arbol)
-	pruebaArbol(25, arbol)
-	pruebaArbol(1, arbol)
-	pruebaArbol(6, arbol)
-	pruebaArbol(15, arbol)
-	pruebaArbol(15, arbol)
-	arbol.Print()
 
 	//Endpoints
 	router.HandleFunc("/cargartienda", CargarTienda).Methods("POST")
@@ -50,9 +35,13 @@ func main() {
 	router.HandleFunc("/guardar", GuardarDatos).Methods("GET")
 	router.HandleFunc("/getArreglo", CrearGrafo).Methods("GET")
 	router.HandleFunc("/cargarInv", CargarInven).Methods("POST")
-	router.HandleFunc("/tiendas", DevolverTiendas).Methods("GET")
+
+
+	router.HandleFunc("/tiendas", DevolverTiendasAPI).Methods("GET")
 	router.HandleFunc("/cargartiendas", CargarTiendasAPI).Methods("POST")
 	router.HandleFunc("/cargarinventario", CargarInvenAPI).Methods("POST")
+	router.HandleFunc("/productos/{dept}/{cal}/{nom}", DevolverInventarioAPI).Methods("POST")
+
 	// iniciar el servidor en el puerto 3000
 	log.Fatal(http.ListenAndServe(":3000", router))
 }
@@ -235,25 +224,6 @@ func CrearGrafo(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func DevolverTiendas(w http.ResponseWriter, req *http.Request){
-	setupCorsResponse(&w, req)
-	arregloTiendas := make([]EstructurasCreadas.Store, 0)
-	for i:= 0; i< len(Vector); i ++ {
-		arregloTiendas = append(arregloTiendas, Vector[i].ReturnListStore()...)
-	}
-	for i:= 0; i< len(arregloTiendas); i ++ {
-		fmt.Println(arregloTiendas[i].Nombre)
-	}
-	encoder := json.NewEncoder(w)
-	encoder.SetIndent("", "    ")
-	if TamaVec == 0 {
-		_ = encoder.Encode("Los datos no han sido ingresados")
-	} else {
-		fmt.Println("Esto es una peticion de tipo get")
-		_ = encoder.Encode(arregloTiendas)
-	}
-}
-
 func CargarInven(w http.ResponseWriter, req *http.Request) {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
@@ -299,6 +269,25 @@ func setupCorsResponse(w *http.ResponseWriter, req *http.Request) {
 }
 
 // metodos de la api rest
+
+func DevolverTiendasAPI(w http.ResponseWriter, req *http.Request){
+	setupCorsResponse(&w, req)
+	arregloTiendas := make([]EstructurasCreadas.StoreFront, 0)
+	for i:= 0; i< len(Vector); i ++ {
+		arregloTiendas = append(arregloTiendas, Vector[i].ReturnListStore()...)
+	}
+	for i:= 0; i< len(arregloTiendas); i ++ {
+		fmt.Println(arregloTiendas[i].Nombre)
+	}
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if TamaVec == 0 {
+		_ = encoder.Encode("Los datos no han sido ingresados")
+	} else {
+		fmt.Println("Esto es una peticion de tipo get")
+		_ = encoder.Encode(arregloTiendas)
+	}
+}
 
 func CargarTiendasAPI(w http.ResponseWriter, req *http.Request) {
 	setupCorsResponse(&w, req)
@@ -352,4 +341,34 @@ func CargarInvenAPI(w http.ResponseWriter, req *http.Request) {
 		inventario := Vector
 		fmt.Println(inventario)
 	}
+}
+
+func DevolverInventarioAPI(w http.ResponseWriter, req *http.Request){
+	setupCorsResponse(&w, req)
+	fmt.Println("Esto es una peticion de tipo post")
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	vars := mux.Vars(req)
+	nombre , _ := vars["nom"]
+	calificacion , _ :=strconv.Atoi(vars["cal"])
+	departamento , _ := vars["dept"]
+	//var tienda EstructurasCreadas.StoreFront
+	//_ = json.NewDecoder(req.Body).Decode(&tienda)
+	//fmt.Println(tienda)
+	first1 := nombre[0:1]
+	fmt.Println(first1)
+	indice, dept, _ := EncontrarIndices(departamento, first1)
+	elemento := int(calificacion) + 5*(indice+(len(Indices)*dept)) - 1
+	store, err := Vector[elemento].BuscarTienda(nombre)
+	if err == 0 {
+		_ = encoder.Encode("Tienda no existe")
+	}else{
+		if store.ReturnRaiz() == nil {
+			_ = encoder.Encode("No hay productos")
+		}else{
+			arreglo := store.ReturnInventario()
+			_ = encoder.Encode(arreglo)
+		}
+	}
+	setupCorsResponse(&w, req)
 }

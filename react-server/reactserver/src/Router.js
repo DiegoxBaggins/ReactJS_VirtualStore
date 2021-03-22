@@ -4,6 +4,8 @@ import SeccionPrueba from "./components/SeccionPrueba";
 import Tiendas from "./components/Tiendas";
 import Header from "./components/Header";
 import SubirArchivos from "./components/SubirArchivos";
+import Productos from "./components/Productos";
+
 
 class Router extends Component{
 
@@ -17,6 +19,7 @@ class Router extends Component{
                     <Route exact path="/Home" component={Tiendas} />
                     <Route exact path="/ruta-prueba" component={SeccionPrueba} />
                     <Route exact path="/uploads" component={SubirArchivos} />
+                    <Route exact path="/tienda" component={Productos}/>
                 </Switch>
 
             </BrowserRouter>

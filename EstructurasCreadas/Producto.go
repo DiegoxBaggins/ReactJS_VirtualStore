@@ -22,7 +22,7 @@ type Product struct {
 	Imagen      string  `json:"Imagen,omitempty"`
 }
 
-func (product *Product) ConvertirTienda() *Producto {
+func (product *Product) ConvertirProduct() *Producto {
 	nombre := product.Nombre
 	codigo := int(product.Codigo)
 	descripcion := product.Descripcion
@@ -38,7 +38,7 @@ func (inventario *Invent) SacarInventario(Vector []ListaTienda, Indices []string
 		for j := 0; j < len(inventario.Inventarios[i].Productos); j++ {
 			tienda.productos.Insertar(inventario.Inventarios[i].Productos[j])
 		}
-		tienda.productos.Print()
+		//tienda.productos.Print()
 	}
 }
 
@@ -87,6 +87,10 @@ type Producto struct {
 	equilibrio  int
 	hizq        *Producto
 	hder        *Producto
+}
+
+func (producto *Producto) ConvertirProducto() Product {
+	return Product{producto.nombre, float64(producto.codigo), producto.descripcion, producto.precio, float64(producto.cantidad), producto.imagen}
 }
 
 func NuevoProducto(nombre string, codigo float64, descripcion string, precio float64, cantidad float64, imagen string) *Producto {
@@ -157,7 +161,7 @@ func (arbol *ArbolProd) rotacionDobleDerecha(temp *Producto) *Producto {
 func (arbol *ArbolProd) _Insertar(product Product, raiz *Producto) *Producto {
 	codigo := int(product.Codigo)
 	if raiz == nil {
-		return product.ConvertirTienda()
+		return product.ConvertirProduct()
 	} else if codigo < raiz.codigo {
 		raiz.hizq = arbol._Insertar(product, raiz.hizq)
 		if (arbol.obtenerEQ(raiz.hizq) - arbol.obtenerEQ(raiz.hder)) == -2 {
@@ -197,4 +201,20 @@ func (arbol *ArbolProd) inOrden(temp *Producto) {
 		fmt.Println("Index: ", temp.codigo, temp.equilibrio, temp.cantidad)
 		arbol.inOrden(temp.hder)
 	}
+}
+
+
+// otros metodos del arbol
+
+func (arbol *ArbolProd) DevolverListaProducts(producto *Producto) []Product {
+	arreglo := make([]Product, 1)
+	product := producto.ConvertirProducto()
+	arreglo[0] = product
+	if producto.hizq != nil {
+		arreglo = append(arreglo, arbol.DevolverListaProducts(producto.hizq)...)
+	}
+	if producto.hder != nil {
+		arreglo = append(arreglo, arbol.DevolverListaProducts(producto.hder)...)
+	}
+	return arreglo
 }

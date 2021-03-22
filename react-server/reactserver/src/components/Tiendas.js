@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
-import axios from 'axios';
 import Tienda from './Tienda';
 import SidebarBuscador from "./SidebarBuscador";
-import Router from "../Router";
 
 const Server = "http://localhost:3000";
 
@@ -13,11 +11,6 @@ class Tiendas extends Component{
         selectedFile: null,
         datos : null
     }
-
-    constructor(props){
-        super(props);
-    }
-
 
     componentDidMount = async() => {
         const response = await fetch(`${Server}/tiendas`);

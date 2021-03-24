@@ -97,14 +97,6 @@ func NuevoProducto(nombre string, codigo float64, descripcion string, precio flo
 	return &Producto{nombre, int(codigo), descripcion, precio, int(cantidad), imagen, 0, nil, nil}
 }
 
-type ArbolProd struct {
-	raiz *Producto
-}
-
-func NewArbol() *ArbolProd {
-	return &ArbolProd{nil}
-}
-
 func (producto *Producto) buscarProd(codigo int) *Producto {
 	if producto.codigo == codigo {
 		return producto
@@ -114,6 +106,14 @@ func (producto *Producto) buscarProd(codigo int) *Producto {
 		return producto.hder.buscarProd(codigo)
 	}
 	return nil
+}
+
+type ArbolProd struct {
+	raiz *Producto
+}
+
+func NewArbol() *ArbolProd {
+	return &ArbolProd{nil}
 }
 
 func (arbol *ArbolProd) max(val1 int, val2 int) int {
@@ -208,13 +208,55 @@ func (arbol *ArbolProd) inOrden(temp *Producto) {
 
 func (arbol *ArbolProd) DevolverListaProducts(producto *Producto) []Product {
 	arreglo := make([]Product, 1)
-	product := producto.ConvertirProducto()
-	arreglo[0] = product
 	if producto.hizq != nil {
 		arreglo = append(arreglo, arbol.DevolverListaProducts(producto.hizq)...)
 	}
+	product := producto.ConvertirProducto()
+	arreglo[0] = product
 	if producto.hder != nil {
 		arreglo = append(arreglo, arbol.DevolverListaProducts(producto.hder)...)
 	}
 	return arreglo
 }
+
+func (arbol *ArbolProd) RestarInven(producto *Producto, codigo int, cantidad int) {
+	if producto.codigo == codigo {
+		producto.cantidad -= cantidad
+	}else {
+		if codigo < producto.codigo {
+			arbol.RestarInven(producto.hizq, codigo, cantidad)
+		}else{
+			arbol.RestarInven(producto.hder, codigo, cantidad)
+		}
+	}
+}
+
+type ProductCarr struct {
+	Nombre      	string  `json:"Nombre,omitempty"`
+	Codigo      	float64 `json:"Codigo,omitempty"`
+	Descripcion 	string  `json:"Descripcion,omitempty"`
+	Precio      	float64 `json:"Precio,omitempty"`
+	Cantidad    	float64 `json:"Cantidad,omitempty"`
+	Imagen      	string  `json:"Imagen,omitempty"`
+	Tienda      	string  `json:"Tienda,omitempty"`
+	Calificacion 	float64 `json:"Calificacion,omitempty"`
+	Departamento 	string  `json:"Departamento,omitempty"`
+}
+
+func NuevoProdCarr(nombre string, codigo float64, descripcion string, precio float64, cantidad float64, imagen string, tienda string, cal float64, dept string) *ProductCarr {
+	return &ProductCarr{nombre, codigo, descripcion, precio, cantidad, imagen, tienda, cal, dept}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

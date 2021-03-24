@@ -198,6 +198,22 @@ body {
   margin: 15px;
 }
 
+.btn-sum {
+  background: skyblue;
+  color: black;
+  padding: 10px;
+  font-weight: bold;
+  font-size: 14px;
+  transition: 300ms all;
+  cursor:pointer;
+  margin: 15px;
+}
+
+.p-p {
+  font-weight: bold;
+  font-size: 14px;
+}
+
 .btn{
   display: block;
   background: black;

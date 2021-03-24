@@ -142,13 +142,8 @@ func (tienda *Tienda) ReturnInventario() []Product{
 	return tienda.productos.DevolverListaProducts(tienda.productos.raiz)
 }
 
-func (lista *ListaTienda) ReturnListStore() []StoreFront{
-	arreglo := make([]StoreFront, lista.elementos)
-	aux := lista.primero
-	for i:=0; i<lista.elementos; i ++ {
-		arreglo[i] = aux.ReturnStore()
-	}
-	return arreglo
+func (tienda *Tienda) RestarInventario(codigo int, cantidad int) {
+	tienda.productos.RestarInven(tienda.productos.raiz, codigo, cantidad)
 }
 
 func NewTienda(nombre string, desc string, cont string, cal int, logo string, dept string) *Tienda {
@@ -159,6 +154,15 @@ type ListaTienda struct {
 	primero   *Tienda
 	ultimo    *Tienda
 	elementos int
+}
+
+func (lista *ListaTienda) ReturnListStore() []StoreFront{
+	arreglo := make([]StoreFront, lista.elementos)
+	aux := lista.primero
+	for i:=0; i<lista.elementos; i ++ {
+		arreglo[i] = aux.ReturnStore()
+	}
+	return arreglo
 }
 
 func (lista *ListaTienda) MostrarDatos() {

@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 
-class SeccionPrueba extends Component{
+const Server = "http://127.0.0.1:3000";
 
-    contador = 0;
+class SeccionPrueba extends Component{
 
     state = {
         contador: 0

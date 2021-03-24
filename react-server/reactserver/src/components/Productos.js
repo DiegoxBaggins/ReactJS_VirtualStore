@@ -12,10 +12,10 @@ class Productos extends Component{
         productos : []
     }
 
-    componentDidMount = () => {
-        this.EstablecerDatos();
+    componentDidMount = async() => {
+        await this.EstablecerDatos();
         const direccion = localStorage.getItem('Departamento') + "/" + localStorage.getItem('Calificacion') + "/" + localStorage.getItem('Nombre')
-        axios.post(`${Server}/productos/${direccion}`).then( (response) => {
+        axios.get(`${Server}/productos/${direccion}`).then( (response) => {
             console.log(response);
             if (response.data !== "No hay productos") {
                 this.setState({
@@ -48,7 +48,7 @@ class Productos extends Component{
         return (
             <div className="center">
                 <div id="content">
-                    <h2 className="subheader">Tienda: {this.state.tienda.Nombre} </h2>
+                    <h2>Tienda: {this.state.tienda.Nombre} </h2>
                     <h2 className="subheader"> Productos </h2>
                     {!this.state.productos[0] &&
                     <div>

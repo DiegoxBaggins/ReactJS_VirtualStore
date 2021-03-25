@@ -23,9 +23,12 @@ var Inventario EstructurasCreadas.Invent
 var TamaVec = 0
 var Indices []string
 var Departamentos []string
-var Carrito [] EstructurasCreadas.ProductCarr
+var Carrito []EstructurasCreadas.ProductCarr
+var JsonPedidos EstructurasCreadas.Pedido
+var Pedidos EstructurasCreadas.ArbolAnio
 
 func main() {
+	pruebaMatriz()
 	//enrutador denominado router
 	router := mux.NewRouter()
 
@@ -38,7 +41,6 @@ func main() {
 	router.HandleFunc("/getArreglo", CrearGrafo).Methods("GET")
 	router.HandleFunc("/cargarInv", CargarInven).Methods("POST")
 
-
 	router.HandleFunc("/tiendas", DevolverTiendasAPI).Methods("GET")
 	router.HandleFunc("/cargartiendas", CargarTiendasAPI).Methods("POST")
 	router.HandleFunc("/cargarinventario", CargarInvenAPI).Methods("POST")
@@ -47,6 +49,7 @@ func main() {
 	router.HandleFunc("/carrito", ReturnCarritoAPI).Methods("GET")
 	router.HandleFunc("/eliminarCarrito", EliminarDelCarritoAPI).Methods("POST")
 	router.HandleFunc("/PagarCarrito", PagarCarritoAPI).Methods("GET")
+	router.HandleFunc("/cargarpedidos", CargarPedidosAPI).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -268,9 +271,17 @@ func LinealizarRM(valor int, matriz [10][26][5]EstructurasCreadas.ListaTienda) [
 	return arreglo
 }
 
-func pruebaArbol(codigo float64, arbol *EstructurasCreadas.ArbolProd) {
-	product := EstructurasCreadas.Product{"h", codigo, "h", 10, 10, "h"}
-	arbol.Insertar(product)
+func pruebaMatriz() {
+	matriz := EstructurasCreadas.NewCC()
+	matriz.InsertarNodoM(5, "C")
+	matriz.InsertarNodoM(1, "C")
+	matriz.InsertarNodoM(2, "C")
+	matriz.InsertarNodoM(4, "A")
+	matriz.InsertarNodoM(3, "B")
+	matriz.InsertarNodoM(11, "J")
+	matriz.InsertarNodoM(2, "B")
+	hol := matriz
+	fmt.Println(hol)
 }
 
 /*
@@ -279,17 +290,17 @@ func setupCorsResponse(w *http.ResponseWriter, req *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Authorization")
 }
- */
+*/
 
 // metodos de la api rest
 
-func DevolverTiendasAPI(w http.ResponseWriter, req *http.Request){
+func DevolverTiendasAPI(w http.ResponseWriter, req *http.Request) {
 	//setupCorsResponse(&w, req)
 	arregloTiendas := make([]EstructurasCreadas.StoreFront, 0)
-	for i:= 0; i< len(Vector); i ++ {
+	for i := 0; i < len(Vector); i++ {
 		arregloTiendas = append(arregloTiendas, Vector[i].ReturnListStore()...)
 	}
-	for i:= 0; i< len(arregloTiendas); i ++ {
+	for i := 0; i < len(arregloTiendas); i++ {
 		fmt.Println(arregloTiendas[i].Nombre)
 	}
 	encoder := json.NewEncoder(w)
@@ -351,20 +362,18 @@ func CargarInvenAPI(w http.ResponseWriter, req *http.Request) {
 		_ = encoder.Encode("Datos cargados con exito")
 		fmt.Println(Inventario)
 		Inventario.SacarInventario(Vector, Indices, Departamentos)
-		inventario := Vector
-		fmt.Println(inventario)
 	}
 }
 
-func DevolverInventarioAPI(w http.ResponseWriter, req *http.Request){
+func DevolverInventarioAPI(w http.ResponseWriter, req *http.Request) {
 	//setupCorsResponse(&w, req)
 	fmt.Println("Esto es una peticion de tipo post")
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
 	vars := mux.Vars(req)
-	nombre , _ := vars["nom"]
-	calificacion , _ :=strconv.Atoi(vars["cal"])
-	departamento , _ := vars["dept"]
+	nombre, _ := vars["nom"]
+	calificacion, _ := strconv.Atoi(vars["cal"])
+	departamento, _ := vars["dept"]
 	first1 := nombre[0:1]
 	fmt.Println(first1)
 	indice, dept, _ := EncontrarIndices(departamento, first1)
@@ -372,17 +381,17 @@ func DevolverInventarioAPI(w http.ResponseWriter, req *http.Request){
 	store, err := Vector[elemento].BuscarTienda(nombre)
 	if err == 0 {
 		_ = encoder.Encode("Tienda no existe")
-	}else{
+	} else {
 		if store.ReturnRaiz() == nil {
 			_ = encoder.Encode("No hay productos")
-		}else{
+		} else {
 			arreglo := store.ReturnInventario()
 			_ = encoder.Encode(arreglo)
 		}
 	}
 }
 
-func AgregarAlCarritoAPI(w http.ResponseWriter, req *http.Request){
+func AgregarAlCarritoAPI(w http.ResponseWriter, req *http.Request) {
 	//setupCorsResponse(&w, req)
 	arregloProd := make([]EstructurasCreadas.ProductCarr, 1)
 	var producto EstructurasCreadas.ProductCarr
@@ -401,7 +410,7 @@ func AgregarAlCarritoAPI(w http.ResponseWriter, req *http.Request){
 	}
 }
 
-func ReturnCarritoAPI(w http.ResponseWriter, req *http.Request){
+func ReturnCarritoAPI(w http.ResponseWriter, req *http.Request) {
 	//setupCorsResponse(&w, req)
 	var carr = Carrito
 	fmt.Println(carr)
@@ -416,14 +425,14 @@ func ReturnCarritoAPI(w http.ResponseWriter, req *http.Request){
 	fmt.Println(Carrito)
 }
 
-func EliminarDelCarritoAPI(w http.ResponseWriter, req *http.Request){
+func EliminarDelCarritoAPI(w http.ResponseWriter, req *http.Request) {
 	//setupCorsResponse(&w, req)
 	var producto EstructurasCreadas.ProductCarr
 	_ = json.NewDecoder(req.Body).Decode(&producto)
 	fmt.Println(producto)
 	espacio := 0
-	for espacio = 0; espacio <len(Carrito); espacio ++{
-		if Carrito[espacio].Codigo == producto.Codigo && Carrito[espacio].Tienda == producto.Tienda && Carrito[espacio].Departamento == producto.Departamento && Carrito[espacio].Calificacion == producto.Calificacion{
+	for espacio = 0; espacio < len(Carrito); espacio++ {
+		if Carrito[espacio].Codigo == producto.Codigo && Carrito[espacio].Tienda == producto.Tienda && Carrito[espacio].Departamento == producto.Departamento && Carrito[espacio].Calificacion == producto.Calificacion {
 			break
 		}
 	}
@@ -438,12 +447,12 @@ func EliminarDelCarritoAPI(w http.ResponseWriter, req *http.Request){
 	}
 }
 
-func PagarCarritoAPI(w http.ResponseWriter, req *http.Request){
+func PagarCarritoAPI(w http.ResponseWriter, req *http.Request) {
 	//setupCorsResponse(&w, req)
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
 	espacio := 0
-	for espacio = 0; espacio <len(Carrito); espacio ++{
+	for espacio = 0; espacio < len(Carrito); espacio++ {
 		nombre := Carrito[espacio].Tienda
 		calificacion := Carrito[espacio].Calificacion
 		departamento := Carrito[espacio].Departamento
@@ -459,5 +468,36 @@ func PagarCarritoAPI(w http.ResponseWriter, req *http.Request){
 	} else {
 		fmt.Println("Esto es una peticion de tipo get")
 		_ = encoder.Encode("Pagado")
+	}
+}
+
+func CargarPedidosAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	fmt.Println("Esto es una peticion de tipo post")
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if TamaVec == 0 {
+		_ = encoder.Encode("Los datos no han sido ingresados")
+	} else {
+		fmt.Println("Esto es una peticion de tipo post")
+		var buf bytes.Buffer
+		file, header, err := req.FormFile("myFile")
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+		name := strings.Split(header.Filename, ".")
+		fmt.Printf("File name %s\n", name[0])
+		io.Copy(&buf, file)
+		contents := buf.String()
+		fmt.Println(contents)
+		_ = json.Unmarshal(buf.Bytes(), &JsonPedidos)
+		_ = encoder.Encode("Datos cargados con exito")
+		fmt.Println(Pedidos)
+		JsonPedidos.ConstruirDatos(&Pedidos)
+		inventario := JsonPedidos
+		invetario1 := Pedidos
+		fmt.Println(inventario)
+		fmt.Println(invetario1)
 	}
 }

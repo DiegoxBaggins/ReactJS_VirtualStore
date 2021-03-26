@@ -25,14 +25,13 @@ class Header extends Component{
                                 <NavLink to="/Carrito" activeClassName="active">Carrito</NavLink>
                             </li>
                             <li>
-                                <NavLink to="/ruta-prueba" activeClassName="active"> Administrador</NavLink>
+                                <NavLink to="/Admin" activeClassName="active"> Administrador</NavLink>
                             </li>
                             <li>
                                 <NavLink to="/uploads" activeClassName="active"> Uploads</NavLink>
                             </li>
                         </ul>
                     </nav>
-                    { /*LIMPIAR FLOTADOS */}
 
                     <div className="clearfix"> </div>
                 </div>

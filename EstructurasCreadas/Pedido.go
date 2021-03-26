@@ -2,6 +2,10 @@ package EstructurasCreadas
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -128,7 +132,7 @@ func (arbol *ArbolAnio) _Insertar(anio float64, raiz *NodoAnio) *NodoAnio {
 		return NuevoAnio(anio)
 	} else if codigo < raiz.anio {
 		raiz.hizq = arbol._Insertar(anio, raiz.hizq)
-		if (arbol.obtenerEQ(raiz.hizq) - arbol.obtenerEQ(raiz.hder)) == -2 {
+		if (arbol.obtenerEQ(raiz.hizq) - arbol.obtenerEQ(raiz.hder)) == 2 {
 			if codigo < raiz.hizq.anio {
 				raiz = arbol.rotacionIzquierda(raiz)
 			} else {
@@ -187,6 +191,109 @@ func (arbol *ArbolAnio) _buscarAnio(anio int, temp *NodoAnio) *NodoAnio {
 		}
 	}
 	return nil
+}
+
+func (arbol *ArbolAnio) GraficarGrafo(){
+	direct := "./react-server/reactserver/src/assets/images/grafos/anios/"
+	fmt.Println("Example file does not exist (or is a directory)")
+	var graph = "digraph G{\n"
+	graph += "rankdir=TB;\n"
+	graph += arbol._GraficarGrafo(arbol.raiz)
+	graph += "\n}"
+	data := []byte(graph)
+	err := ioutil.WriteFile(direct + "anios.dot", data, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	path, _ := exec.LookPath("dot")
+	cmd, _ := exec.Command(path, "-Tpng", direct + "anios.dot").Output()
+	mode := int(0777)
+	err = ioutil.WriteFile(direct + "anios.png", cmd, os.FileMode(mode))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (arbol *ArbolAnio) _GraficarGrafo(temp *NodoAnio) string{
+	grafo := ""
+	rank := ""
+	if temp != nil {
+		grafo += "Nodo" + strconv.Itoa(temp.anio) + "[label=\"" + strconv.Itoa(temp.anio) + "\"]\n"
+		if temp.meses.primero != nil {
+			grafo += "Nodo" + strconv.Itoa(temp.anio) + "->" + "Nodo" + strconv.Itoa(temp.anio) + strconv.Itoa(temp.meses.primero.codigo) + ";\n"
+			rank += "{rank = same; " + "Nodo" + strconv.Itoa(temp.anio) + "; "
+			s1, s2 := temp.meses._GraficarGrafo1(strconv.Itoa(temp.anio))
+			grafo += s1
+			rank += s2
+			rank += "}\n"
+			grafo += rank
+		}
+		if temp.hizq != nil {
+			grafo += arbol._GraficarGrafo(temp.hizq)
+			grafo += "Nodo" + strconv.Itoa(temp.anio) + "->" + "Nodo" + strconv.Itoa(temp.hizq.anio) + ";\n"
+		}
+		if temp.hder != nil {
+			grafo += arbol._GraficarGrafo(temp.hder)
+			grafo += "Nodo" + strconv.Itoa(temp.anio) + "->" + "Nodo" + strconv.Itoa(temp.hder.anio) + ";\n"
+		}
+	}
+	return grafo
+}
+
+func (lista *ListaMeses) _GraficarGrafo1(anio string) (string, string){
+	auxiliar := lista.primero
+	grafo := ""
+	rank := ""
+	for i := 0; i < lista.elementos; i++ {
+		grafo += "Nodo" +anio + strconv.Itoa(auxiliar.codigo) + "[label=\"" + auxiliar.nombre + "\"]\n"
+		rank += "Nodo" +anio + strconv.Itoa(auxiliar.codigo) + "; "
+		auxiliar = auxiliar.siguiente
+		if auxiliar != nil{
+			grafo += "Nodo" +anio + strconv.Itoa(auxiliar.anterior.codigo) + "->" + "Nodo" + anio + strconv.Itoa(auxiliar.codigo) + ";\n"
+		}
+	}
+	return grafo, rank
+}
+
+type AnioFront struct {
+	Nombre		float64		`json:"Nombre,omitempty"`
+	Meses		[]MesFront
+}
+
+type MesFront struct {
+	Nombre 		string		`json:"Nombre,omitempty"`
+	Numero		float64		`json:"Numero,omitempty"`
+}
+
+func (arbol *ArbolAnio) ListaAnios() []AnioFront{
+	return arbol._ListaAnios(arbol.raiz)
+}
+
+func (arbol *ArbolAnio) _ListaAnios(temp *NodoAnio) []AnioFront {
+	if temp != nil {
+		arreglo1 := make([]AnioFront, 0)
+		if temp.hizq != nil{
+			arreglo1 = append(arreglo1, arbol._ListaAnios(temp.hizq)...)
+		}
+		arreglo2 := make([]AnioFront, 1)
+		arreglo2[0] = AnioFront{float64(temp.anio),  temp.ListaMeses()}
+		arreglo1 = append(arreglo1, arreglo2...)
+		if temp.hizq != nil {
+			arreglo1 = append(arreglo1, arbol._ListaAnios(temp.hder)...)
+		}
+		return arreglo1
+	}
+	return nil
+}
+
+func (nodo *NodoAnio) ListaMeses() []MesFront{
+	arreglo1 := make([]MesFront, nodo.meses.elementos)
+	auxiliar := nodo.meses.primero
+	for i:= 0; i <nodo.meses.elementos; i ++ {
+		arreglo1[i] = MesFront{auxiliar.nombre, float64(auxiliar.codigo)}
+		auxiliar = auxiliar.siguiente
+	}
+	return arreglo1
 }
 
 // otros metodos del arbol
@@ -642,6 +749,73 @@ func (central *CabeceraCen) BuscarNodoM(nombre string, dia int) *CuerpoM {
 		}
 		return aux
 	}
+}
+
+func (arbol *ArbolAnio) GraficarMatriz(anio int, mes int, mesp string) {
+	anioNodo := arbol.buscarAnio(anio)
+	mesNodo := anioNodo.meses.BuscarMes(mes)
+	mesNodo.pedidos.GraficarGrafo(strconv.Itoa(anio), mesp)
+}
+
+func (central *CabeceraCen) GraficarGrafo(anio string, mes string){
+	direct := "./react-server/reactserver/src/assets/images/grafos/matriz/"
+	fmt.Println("Example file does not exist (or is a directory)")
+	var graph = "graph G{\n"
+	graph += "edge [weight=1000 style=dashed color=dimgrey]\n"
+	graph += central._Graficar()
+	graph += "\n}"
+	data := []byte(graph)
+	err := ioutil.WriteFile(direct + anio + mes + ".dot", data, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	path, _ := exec.LookPath("dot")
+	cmd, _ := exec.Command(path, "-Tpng", direct + anio + mes + ".dot").Output()
+	mode := int(0777)
+	err = ioutil.WriteFile(direct + anio + mes + ".png", cmd, os.FileMode(mode))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (central *CabeceraCen) _Graficar() string {
+	grafo := "A0"
+	auxhor := central.hor
+	for i:=0 ; i < central.numh; i++{
+		grafo += "--" + auxhor.nombre
+		auxhor = auxhor.abajo
+	}
+	grafo += "\n"
+	auxver := central.ver
+	for i:=0 ; i < central.numv; i++{
+		grafo += strconv.Itoa(auxver.dia)
+		auxcuerpo:= auxver.abajo
+		for j:=0 ; j < auxver.elementos; j++{
+			grafo += "--" + auxcuerpo.nombre + strconv.Itoa(auxcuerpo.dia)
+			auxcuerpo = auxcuerpo.abajo
+		}
+		grafo += "\n"
+		auxver = auxver.derecha
+	}
+	grafo += "rank=same {A0 "
+	auxver = central.ver
+	for i:=0 ; i < central.numv; i++{
+		grafo += "--" + strconv.Itoa(auxver.dia)
+		auxver = auxver.derecha
+	}
+	grafo += "}\n"
+	auxhor = central.hor
+	for i:=0 ; i < central.numh; i++{
+		grafo += "rank=same {" + auxhor.nombre
+		auxcuerpo:= auxhor.derecho
+		for j:=0 ; j < auxhor.elementos; j++{
+			grafo += "--" + auxcuerpo.nombre + strconv.Itoa(auxcuerpo.dia)
+			auxcuerpo = auxcuerpo.derecha
+		}
+		grafo += "}\n"
+		auxhor = auxhor.abajo
+	}
+	return grafo
 }
 
 type ProductPedido struct {

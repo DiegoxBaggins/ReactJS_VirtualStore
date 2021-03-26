@@ -1,0 +1,7 @@
+digraph G{
+rankdir=TB;
+Nodo4222[label="4222"]
+Nodo4232[label="4232"]
+Nodo4222->Nodo4232;
+
+}

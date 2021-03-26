@@ -2,7 +2,9 @@ package main
 
 import (
 	"Proyecto-moduls/EstructurasCreadas"
+	"bufio"
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -45,11 +47,15 @@ func main() {
 	router.HandleFunc("/cargartiendas", CargarTiendasAPI).Methods("POST")
 	router.HandleFunc("/cargarinventario", CargarInvenAPI).Methods("POST")
 	router.HandleFunc("/productos/{dept}/{cal}/{nom}", DevolverInventarioAPI).Methods("GET")
+	router.HandleFunc("/imgproductos/{dept}/{cal}/{nom}", DevolverImagenInvAPI).Methods("GET")
 	router.HandleFunc("/agregarCarrito", AgregarAlCarritoAPI).Methods("POST")
 	router.HandleFunc("/carrito", ReturnCarritoAPI).Methods("GET")
 	router.HandleFunc("/eliminarCarrito", EliminarDelCarritoAPI).Methods("POST")
 	router.HandleFunc("/PagarCarrito", PagarCarritoAPI).Methods("GET")
 	router.HandleFunc("/cargarpedidos", CargarPedidosAPI).Methods("POST")
+	router.HandleFunc("/aniosmeses", DevolverAniosAPI).Methods("GET")
+	router.HandleFunc("/aniosmesesimg", DevolverImagenAniosAPI).Methods("GET")
+	router.HandleFunc("/matriz/{anio}/{mes}/{mesp}", DevolverImagenMatrizAPI).Methods("GET")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -280,8 +286,33 @@ func pruebaMatriz() {
 	matriz.InsertarNodoM(3, "B")
 	matriz.InsertarNodoM(11, "J")
 	matriz.InsertarNodoM(2, "B")
+	matriz.GraficarGrafo("2000", "Enero")
 	hol := matriz
 	fmt.Println(hol)
+	arbol := EstructurasCreadas.NewArAnios()
+	arbol.Insertar(2019)
+	arbol.Insertar(2017)
+	arbol.Insertar(1999)
+	arbol.Insertar(1998)
+	arbol.Insertar(1995)
+	arbol.Insertar(155)
+	arbol.Insertar(2255)
+	arbol.Insertar(2300)
+	arbol.Insertar(2018)
+	hola := arbol
+	fmt.Println(hola)
+
+	arbol1 := EstructurasCreadas.NewArbol()
+	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 2019, Precio: 1, Cantidad: 1})
+	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 2017, Precio: 1, Cantidad: 1})
+	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 1999, Precio: 1, Cantidad: 1})
+	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 1998, Precio: 1, Cantidad: 1})
+	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 1995, Precio: 1, Cantidad: 1})
+	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 155, Precio: 1, Cantidad: 1})
+	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 2255, Precio: 1, Cantidad: 1})
+	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 2300, Precio: 1, Cantidad: 1})
+	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 2018, Precio: 1, Cantidad: 1})
+	fmt.Println(arbol1)
 }
 
 /*
@@ -387,6 +418,37 @@ func DevolverInventarioAPI(w http.ResponseWriter, req *http.Request) {
 		} else {
 			arreglo := store.ReturnInventario()
 			_ = encoder.Encode(arreglo)
+		}
+	}
+}
+
+func DevolverImagenInvAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	fmt.Println("Esto es una peticion de tipo post")
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	vars := mux.Vars(req)
+	nombre, _ := vars["nom"]
+	calificacion, _ := strconv.Atoi(vars["cal"])
+	departamento, _ := vars["dept"]
+	first1 := nombre[0:1]
+	fmt.Println(first1)
+	indice, dept, _ := EncontrarIndices(departamento, first1)
+	elemento := calificacion + 5*(indice+(len(Indices)*dept)) - 1
+	store, err := Vector[elemento].BuscarTienda(nombre)
+	if err == 0 {
+		_ = encoder.Encode("Tienda no existe")
+	} else {
+		if store.ReturnRaiz() == nil {
+			_ = encoder.Encode("No hay productos")
+		} else {
+			direct := "./react-server/reactserver/src/assets/images/grafos/inventario/"
+			store.GraficarGrafo()
+			f, _ := os.Open(direct + store.ReturnNombre() + ".png")
+			reader := bufio.NewReader(f)
+			content, _ := ioutil.ReadAll(reader)
+			encoded := base64.StdEncoding.EncodeToString(content)
+			_ = encoder.Encode(encoded)
 		}
 	}
 }
@@ -499,5 +561,56 @@ func CargarPedidosAPI(w http.ResponseWriter, req *http.Request) {
 		invetario1 := Pedidos
 		fmt.Println(inventario)
 		fmt.Println(invetario1)
+	}
+}
+
+func DevolverAniosAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	arregloTiendas := Pedidos.ListaAnios()
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if Pedidos.ListaAnios() == nil {
+		_ = encoder.Encode("No hay Pedidos")
+	} else {
+		fmt.Println("Esto es una peticion de tipo get")
+		_ = encoder.Encode(arregloTiendas)
+	}
+}
+
+func DevolverImagenAniosAPI(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if Pedidos.ListaAnios() == nil {
+		_ = encoder.Encode("No hay Pedidos")
+	} else {
+		direct := "./react-server/reactserver/src/assets/images/grafos/anios/"
+		Pedidos.GraficarGrafo()
+		f, _ := os.Open(direct + "anios.png")
+		reader := bufio.NewReader(f)
+		content, _ := ioutil.ReadAll(reader)
+		encoded := base64.StdEncoding.EncodeToString(content)
+		_ = encoder.Encode(encoded)
+	}
+}
+
+func DevolverImagenMatrizAPI(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	vars := mux.Vars(req)
+	anio := vars["anio"]
+	mes := vars["mes"]
+	mesp := vars["mesp"]
+	if Pedidos.ListaAnios() == nil {
+		_ = encoder.Encode("No hay Pedidos")
+	} else {
+		an, _ := strconv.Atoi(anio)
+		mess, _ := strconv.Atoi(mes)
+		direct := "./react-server/reactserver/src/assets/images/grafos/matriz/"
+		Pedidos.GraficarMatriz(an , mess, mesp)
+		f, _ := os.Open(direct + anio + mesp + ".png")
+		reader := bufio.NewReader(f)
+		content, _ := ioutil.ReadAll(reader)
+		encoded := base64.StdEncoding.EncodeToString(content)
+		_ = encoder.Encode(encoded)
 	}
 }

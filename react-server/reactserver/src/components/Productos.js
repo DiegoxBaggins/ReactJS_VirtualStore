@@ -9,7 +9,8 @@ class Productos extends Component{
 
     state = {
         tienda : {},
-        productos : []
+        productos : [],
+        encoded : null
     }
 
     componentDidMount = async() => {
@@ -20,6 +21,18 @@ class Productos extends Component{
             if (response.data !== "No hay productos") {
                 this.setState({
                     productos: response.data
+                });
+                console.log("lista no es vacia")
+                console.log(response.data)
+            }else{
+                console.log("lista es vacia")
+            }
+        });
+        axios.get(`${Server}/imgproductos/${direccion}`).then( (response) => {
+            console.log(response);
+            if (response.data !== "No hay productos") {
+                this.setState({
+                    encoded: response.data
                 });
                 console.log("lista no es vacia")
                 console.log(response.data)
@@ -61,6 +74,9 @@ class Productos extends Component{
                             <Producto key={i} producto={producto}/>
                         )
                     })
+                    }
+                    {this.state.encoded &&
+                    <img src={`data:image/formato;base64,${this.state.encoded}`}  alt="Imagen"/>
                     }
                 </div>
                 <SidebarBuscador />

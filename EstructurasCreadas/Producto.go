@@ -1,6 +1,9 @@
 package EstructurasCreadas
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type Invent struct {
 	Inventarios []Inventario
@@ -164,7 +167,7 @@ func (arbol *ArbolProd) _Insertar(product Product, raiz *Producto) *Producto {
 		return product.ConvertirProduct()
 	} else if codigo < raiz.codigo {
 		raiz.hizq = arbol._Insertar(product, raiz.hizq)
-		if (arbol.obtenerEQ(raiz.hizq) - arbol.obtenerEQ(raiz.hder)) == -2 {
+		if (arbol.obtenerEQ(raiz.hizq) - arbol.obtenerEQ(raiz.hder)) == 2 {
 			if codigo < raiz.hizq.codigo {
 				raiz = arbol.rotacionIzquierda(raiz)
 			} else {
@@ -229,6 +232,22 @@ func (arbol *ArbolProd) RestarInven(producto *Producto, codigo int, cantidad int
 			arbol.RestarInven(producto.hder, codigo, cantidad)
 		}
 	}
+}
+
+func (arbol *ArbolProd) _GraficarGrafo(temp *Producto) string{
+	grafo := ""
+	if temp != nil {
+		grafo += "Nodo" + strconv.Itoa(temp.codigo) + "[label=\"" + strconv.Itoa(temp.codigo) + "\"]\n"
+		if temp.hizq != nil {
+			grafo += arbol._GraficarGrafo(temp.hizq)
+			grafo += "Nodo" + strconv.Itoa(temp.codigo) + "->" + "Nodo" + strconv.Itoa(temp.hizq.codigo) + ";\n"
+		}
+		if temp.hder != nil {
+			grafo += arbol._GraficarGrafo(temp.hder)
+			grafo += "Nodo" + strconv.Itoa(temp.codigo) + "->" + "Nodo" + strconv.Itoa(temp.hder.codigo) + ";\n"
+		}
+	}
+	return grafo
 }
 
 type ProductCarr struct {

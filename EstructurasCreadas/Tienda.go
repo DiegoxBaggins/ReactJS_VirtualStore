@@ -2,6 +2,10 @@ package EstructurasCreadas
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
 	"strconv"
 )
 
@@ -128,6 +132,10 @@ type Tienda struct {
 	anterior     *Tienda
 	siguiente    *Tienda
 	productos    *ArbolProd
+}
+
+func (tienda *Tienda) ReturnNombre() string{
+	return tienda.nombre
 }
 
 func (tienda *Tienda) ReturnRaiz() *Producto {
@@ -276,6 +284,35 @@ func (lista *ListaTienda) GraficarLista(indice int, num int) (string, int) {
 	}
 	graph += nodes + pointers
 	return graph, num
+}
+
+func (tienda *Tienda) GraficarGrafo(){
+	direct := "./react-server/reactserver/src/assets/images/grafos/inventario/"
+	fmt.Println("Example file does not exist (or is a directory)")
+	var graph = "digraph G{\n"
+	graph += "rankdir=TB;\n"
+	graph += tienda.productos._GraficarGrafo(tienda.productos.raiz)
+	graph += "\n}"
+	data := []byte(graph)
+	err := ioutil.WriteFile(direct + tienda.nombre + ".dot", data, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	path, _ := exec.LookPath("dot")
+	cmd, _ := exec.Command(path, "-Tpng", direct + tienda.nombre + ".dot").Output()
+	mode := int(0777)
+	err = ioutil.WriteFile(direct + tienda.nombre + ".png", cmd, os.FileMode(mode))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
 
 /*

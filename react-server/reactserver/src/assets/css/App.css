@@ -23,6 +23,11 @@ body {
   margin: 0px auto;
 }
 
+.center-2{
+  width: 95%;
+  margin: 0px auto;
+}
+
 .clearfix{
   clear:both;
   float:none;
@@ -160,9 +165,26 @@ body {
   margin-right: 20px;
 }
 
+#content-1{
+  width: 85%;
+  float:left;
+  min-height: 650px;
+  margin-right: 20px;
+}
+
 #sidebar{
   width: 25%;
   float:left;
+}
+
+#sidebar-1{
+  width: 10%;
+  float:left;
+}
+
+.sidebar-div{
+  width: 70%;
+  margin-left: 20%;
 }
 
 .sidebar-item{
@@ -183,6 +205,16 @@ body {
 .sidebar-item .btn{
   margin: 0px auto;
   margin-top: 10px;
+}
+
+.btn-mes{
+  background: skyblue;
+  color: black;
+  padding: 2px;
+  font-weight: bold;
+  font-size: 10px;
+  transition: 300ms all;
+  cursor:pointer;
 }
 
 .btn-upload{

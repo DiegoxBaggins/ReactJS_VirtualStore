@@ -56,6 +56,32 @@ class SubirArchivos extends Component{
         });
     };
 
+    onFileUploadUser = () => {
+        const formData = new FormData();
+        formData.append(
+            "myFile",
+            this.state.selectedFile,
+            this.state.selectedFile.name
+        );
+        console.log(this.state.selectedFile);
+        axios.post(`${Server}/cargarusuarios`, formData).then(function (response) {
+            console.log(response);
+        });
+    };
+
+    onFileUploadGrafo = () => {
+        const formData = new FormData();
+        formData.append(
+            "myFile",
+            this.state.selectedFile,
+            this.state.selectedFile.name
+        );
+        console.log(this.state.selectedFile);
+        axios.post(`${Server}/cargargrafo`, formData).then(function (response) {
+            console.log(response);
+        });
+    };
+
     // File content to be displayed after
     // file upload is complete
     fileData = () => {
@@ -81,8 +107,6 @@ class SubirArchivos extends Component{
         }
     };
 
-
-
     render(){
         return (
             <div>
@@ -101,6 +125,14 @@ class SubirArchivos extends Component{
                             <h2> Ingresar pedidos </h2>
                             <input type="file" onChange={this.onFileChange} className="btn-upload" />
                             <button onClick={this.onFileUploadPedido} className="btn-upload"> Subir </button>
+                            <hr/>
+                            <h2> Ingresar Usuarios </h2>
+                            <input type="file" onChange={this.onFileChange} className="btn-upload" />
+                            <button onClick={this.onFileUploadUser} className="btn-upload"> Subir </button>
+                            <hr/>
+                            <h2> Ingresar Grafo </h2>
+                            <input type="file" onChange={this.onFileChange} className="btn-upload" />
+                            <button onClick={this.onFileUploadGrafo} className="btn-upload"> Subir </button>
                             <hr/>
                         </div>
                     </div>

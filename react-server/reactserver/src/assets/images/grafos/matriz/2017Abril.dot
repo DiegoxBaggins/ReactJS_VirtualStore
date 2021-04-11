@@ -1,0 +1,11 @@
+graph G{
+edge [weight=1000 style=dashed color=dimgrey]
+A0--Lectura--Tecnologia--Videojuegos
+1--Lectura1
+7--Videojuegos7--Tecnologia7
+rank=same {A0 --1--7}
+rank=same {Lectura--Lectura1}
+rank=same {Tecnologia--Tecnologia7}
+rank=same {Videojuegos--Videojuegos7}
+
+}

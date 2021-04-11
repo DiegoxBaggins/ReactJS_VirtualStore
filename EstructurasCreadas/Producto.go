@@ -17,12 +17,13 @@ type Inventario struct {
 }
 
 type Product struct {
-	Nombre      string  `json:"Nombre,omitempty"`
-	Codigo      float64 `json:"Codigo,omitempty"`
-	Descripcion string  `json:"Descripcion,omitempty"`
-	Precio      float64 `json:"Precio,omitempty"`
-	Cantidad    float64 `json:"Cantidad,omitempty"`
-	Imagen      string  `json:"Imagen,omitempty"`
+	Nombre         string  `json:"Nombre,omitempty"`
+	Codigo         float64 `json:"Codigo,omitempty"`
+	Descripcion    string  `json:"Descripcion,omitempty"`
+	Precio         float64 `json:"Precio,omitempty"`
+	Cantidad       float64 `json:"Cantidad,omitempty"`
+	Imagen         string  `json:"Imagen,omitempty"`
+	Almacenamiento string  `json:"Almacenamiento,omitempty"`
 }
 
 func (product *Product) ConvertirProduct() *Producto {
@@ -32,7 +33,8 @@ func (product *Product) ConvertirProduct() *Producto {
 	precio := product.Precio
 	cantidad := int(product.Cantidad)
 	imagen := product.Imagen
-	return &Producto{nombre, codigo, descripcion, precio, cantidad, imagen, 0, nil, nil}
+	alma := product.Almacenamiento
+	return &Producto{nombre, codigo, descripcion, precio, cantidad, imagen, 0, alma, nil, nil}
 }
 
 func (inventario *Invent) SacarInventario(Vector []ListaTienda, Indices []string, Departamentos []string) {
@@ -81,23 +83,24 @@ func EncontrarIndices(Indices []string, Departamentos []string, dept string, nom
 }
 
 type Producto struct {
-	nombre      string
-	codigo      int
-	descripcion string
-	precio      float64
-	cantidad    int
-	imagen      string
-	equilibrio  int
-	hizq        *Producto
-	hder        *Producto
+	nombre         string
+	codigo         int
+	descripcion    string
+	precio         float64
+	cantidad       int
+	imagen         string
+	equilibrio     int
+	almacenamiento string
+	hizq           *Producto
+	hder           *Producto
 }
 
 func (producto *Producto) ConvertirProducto() Product {
-	return Product{producto.nombre, float64(producto.codigo), producto.descripcion, producto.precio, float64(producto.cantidad), producto.imagen}
+	return Product{producto.nombre, float64(producto.codigo), producto.descripcion, producto.precio, float64(producto.cantidad), producto.imagen, producto.almacenamiento}
 }
 
-func NuevoProducto(nombre string, codigo float64, descripcion string, precio float64, cantidad float64, imagen string) *Producto {
-	return &Producto{nombre, int(codigo), descripcion, precio, int(cantidad), imagen, 0, nil, nil}
+func NuevoProducto(nombre string, codigo float64, descripcion string, precio float64, cantidad float64, imagen string, alm string) *Producto {
+	return &Producto{nombre, int(codigo), descripcion, precio, int(cantidad), imagen, 0, alm, nil, nil}
 }
 
 func (producto *Producto) buscarProd(codigo int) *Producto {
@@ -206,7 +209,6 @@ func (arbol *ArbolProd) inOrden(temp *Producto) {
 	}
 }
 
-
 // otros metodos del arbol
 
 func (arbol *ArbolProd) DevolverListaProducts(producto *Producto) []Product {
@@ -225,16 +227,16 @@ func (arbol *ArbolProd) DevolverListaProducts(producto *Producto) []Product {
 func (arbol *ArbolProd) RestarInven(producto *Producto, codigo int, cantidad int) {
 	if producto.codigo == codigo {
 		producto.cantidad -= cantidad
-	}else {
+	} else {
 		if codigo < producto.codigo {
 			arbol.RestarInven(producto.hizq, codigo, cantidad)
-		}else{
+		} else {
 			arbol.RestarInven(producto.hder, codigo, cantidad)
 		}
 	}
 }
 
-func (arbol *ArbolProd) _GraficarGrafo(temp *Producto) string{
+func (arbol *ArbolProd) _GraficarGrafo(temp *Producto) string {
 	grafo := ""
 	if temp != nil {
 		grafo += "Nodo" + strconv.Itoa(temp.codigo) + "[label=\"" + strconv.Itoa(temp.codigo) + "\"]\n"
@@ -251,31 +253,17 @@ func (arbol *ArbolProd) _GraficarGrafo(temp *Producto) string{
 }
 
 type ProductCarr struct {
-	Nombre      	string  `json:"Nombre,omitempty"`
-	Codigo      	float64 `json:"Codigo,omitempty"`
-	Descripcion 	string  `json:"Descripcion,omitempty"`
-	Precio      	float64 `json:"Precio,omitempty"`
-	Cantidad    	float64 `json:"Cantidad,omitempty"`
-	Imagen      	string  `json:"Imagen,omitempty"`
-	Tienda      	string  `json:"Tienda,omitempty"`
-	Calificacion 	float64 `json:"Calificacion,omitempty"`
-	Departamento 	string  `json:"Departamento,omitempty"`
+	Nombre       string  `json:"Nombre,omitempty"`
+	Codigo       float64 `json:"Codigo,omitempty"`
+	Descripcion  string  `json:"Descripcion,omitempty"`
+	Precio       float64 `json:"Precio,omitempty"`
+	Cantidad     float64 `json:"Cantidad,omitempty"`
+	Imagen       string  `json:"Imagen,omitempty"`
+	Tienda       string  `json:"Tienda,omitempty"`
+	Calificacion float64 `json:"Calificacion,omitempty"`
+	Departamento string  `json:"Departamento,omitempty"`
 }
 
 func NuevoProdCarr(nombre string, codigo float64, descripcion string, precio float64, cantidad float64, imagen string, tienda string, cal float64, dept string) *ProductCarr {
 	return &ProductCarr{nombre, codigo, descripcion, precio, cantidad, imagen, tienda, cal, dept}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

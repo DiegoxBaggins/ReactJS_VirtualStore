@@ -28,6 +28,8 @@ var Departamentos []string
 var Carrito []EstructurasCreadas.ProductCarr
 var JsonPedidos EstructurasCreadas.Pedido
 var Pedidos EstructurasCreadas.ArbolAnio
+var Usuarios EstructurasCreadas.LecUsuarios
+var Graph EstructurasCreadas.Grafo
 
 func main() {
 	pruebaMatriz()
@@ -56,6 +58,9 @@ func main() {
 	router.HandleFunc("/aniosmeses", DevolverAniosAPI).Methods("GET")
 	router.HandleFunc("/aniosmesesimg", DevolverImagenAniosAPI).Methods("GET")
 	router.HandleFunc("/matriz/{anio}/{mes}/{mesp}", DevolverImagenMatrizAPI).Methods("GET")
+	router.HandleFunc("/cargarusuarios", CargarUsuariosAPI).Methods("POST")
+	router.HandleFunc("/ingresar", IngresarAPlataformaAPI).Methods("GET")
+	router.HandleFunc("/cargargrafo", CargarGrafoAPI).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -313,6 +318,13 @@ func pruebaMatriz() {
 	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 2300, Precio: 1, Cantidad: 1})
 	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 2018, Precio: 1, Cantidad: 1})
 	fmt.Println(arbol1)
+
+	arbolb := EstructurasCreadas.NewArbolB(5)
+	for i := 1; i < 18; i++ {
+		arbolb.Insertar(i)
+	}
+	arbref := arbolb
+	fmt.Println(arbref)
 }
 
 /*
@@ -606,11 +618,66 @@ func DevolverImagenMatrizAPI(w http.ResponseWriter, req *http.Request) {
 		an, _ := strconv.Atoi(anio)
 		mess, _ := strconv.Atoi(mes)
 		direct := "./react-server/reactserver/src/assets/images/grafos/matriz/"
-		Pedidos.GraficarMatriz(an , mess, mesp)
+		Pedidos.GraficarMatriz(an, mess, mesp)
 		f, _ := os.Open(direct + anio + mesp + ".png")
 		reader := bufio.NewReader(f)
 		content, _ := ioutil.ReadAll(reader)
 		encoded := base64.StdEncoding.EncodeToString(content)
 		_ = encoder.Encode(encoded)
 	}
+}
+
+func CargarUsuariosAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	encoder := json.NewEncoder(w)
+	var buf bytes.Buffer
+	file, header, err := req.FormFile("myFile")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	name := strings.Split(header.Filename, ".")
+	fmt.Printf("File name %s\n", name[0])
+	io.Copy(&buf, file)
+	contents := buf.String()
+	fmt.Println(contents)
+	_ = json.Unmarshal(buf.Bytes(), &Usuarios)
+	usuaris := Usuarios
+	fmt.Print(usuaris)
+	encoder.SetIndent("", "    ")
+	fmt.Println("Esto es una peticion de tipo post")
+	_ = encoder.Encode("Usuarios Cargados")
+}
+
+func IngresarAPlataformaAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	encoder := json.NewEncoder(w)
+	_ = json.NewDecoder(req.Body).Decode(&Usuarios)
+	fmt.Println(Usuarios)
+	encoder.SetIndent("", "    ")
+	fmt.Println("Esto es una peticion de tipo post")
+	_ = encoder.Encode("Usuarios Cargados")
+}
+
+func CargarGrafoAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	encoder := json.NewEncoder(w)
+	var buf bytes.Buffer
+	file, header, err := req.FormFile("myFile")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	name := strings.Split(header.Filename, ".")
+	fmt.Printf("File name %s\n", name[0])
+	io.Copy(&buf, file)
+	contents := buf.String()
+	fmt.Println(contents)
+	_ = json.Unmarshal(buf.Bytes(), &Graph)
+	Graph.GraficarGrafo()
+	usuaris := Graph
+	fmt.Print(usuaris)
+	encoder.SetIndent("", "    ")
+	fmt.Println("Esto es una peticion de tipo post")
+	_ = encoder.Encode("Grafo Cargado")
 }

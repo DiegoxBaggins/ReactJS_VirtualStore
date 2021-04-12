@@ -1,7 +1,13 @@
 package EstructurasCreadas
 
 import (
+	"crypto/sha256"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
+	"strconv"
 )
 
 type LecUsuarios struct {
@@ -15,6 +21,12 @@ type Usuario struct {
 	Cuenta   string `json:"Cuenta,omitempty"`
 }
 
+func (archivo *LecUsuarios) ConvertirArbol(arbol *ArbolB) {
+	for i := 0; i < len(archivo.Usuarios); i++ {
+		arbol.Insert(&archivo.Usuarios[i])
+	}
+}
+
 type ArbolB struct {
 	raiz *BNodo
 	t    int
@@ -22,13 +34,6 @@ type ArbolB struct {
 
 func NewArbolB(t int) *ArbolB {
 	return &ArbolB{NewBNodo(t, true), t}
-}
-
-func (arbol *ArbolB) traverse() {
-	if arbol.raiz != nil {
-		arbol.raiz.traverse()
-	}
-	fmt.Println()
 }
 
 func (arbol *ArbolB) BuscarUsuario(k int) *Usuario {
@@ -149,8 +154,7 @@ func (arbol *ArbolB) SplitIzq(nodo1 *BNodo) {
 	nodo1.hoja = false
 }
 
-func (arbol *ArbolB) Insert(dpi int) {
-	usuario := &Usuario{dpi, "as", "bb", "ss", "ss"}
+func (arbol *ArbolB) Insert(usuario *Usuario) {
 	nuevo := arbol.Insertar(arbol.raiz, usuario)
 	if nuevo != nil {
 		pivote := nuevo.usuarios[0]
@@ -217,24 +221,154 @@ func (arbol *ArbolB) InsertarUsuario(nodo *BNodo, usuario *Usuario, hijoDer *BNo
 	}
 }
 
-func (nodo *BNodo) buscarDpi(k int) int {
-	for i := 0; i < nodo.llaves; i++ {
-		if nodo.usuarios[i].Dpi == k {
-			return i
-		}
+func (arbol *ArbolB) GraficarGrafo() {
+	direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
+	var graph = "digraph G{\n"
+	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
+	str1, _ := arbol._GraficarGrafo(arbol.raiz, 0)
+	graph += str1
+	graph += "\n}"
+	data := []byte(graph)
+	err := ioutil.WriteFile(direct+"usuarios.dot", data, 0644)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return -1
+	path, _ := exec.LookPath("dot")
+	cmd, _ := exec.Command(path, "-Tpng", direct+"usuarios.dot").Output()
+	mode := int(0777)
+	err = ioutil.WriteFile(direct+"usuarios.png", cmd, os.FileMode(mode))
+	if err != nil {
+		log.Fatal(err)
+	}
+	graph = "digraph G{\n"
+	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
+	str1, _ = arbol._GraficarGrafoENC(arbol.raiz, 0)
+	graph += str1
+	graph += "\n}"
+	data = []byte(graph)
+	err = ioutil.WriteFile(direct+"usuariosENC.dot", data, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cmd, _ = exec.Command(path, "-Tpng", direct+"usuariosENC.dot").Output()
+	mode = int(0777)
+	err = ioutil.WriteFile(direct+"usuariosENC.png", cmd, os.FileMode(mode))
+	if err != nil {
+		log.Fatal(err)
+	}
+	graph = "digraph G{\n"
+	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
+	str1, _ = arbol._GraficarGrafoSEN(arbol.raiz, 0)
+	graph += str1
+	graph += "\n}"
+	data = []byte(graph)
+	err = ioutil.WriteFile(direct+"usuariosSEN.dot", data, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cmd, _ = exec.Command(path, "-Tpng", direct+"usuariosSEN.dot").Output()
+	mode = int(0777)
+	err = ioutil.WriteFile(direct+"usuariosSEN.png", cmd, os.FileMode(mode))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func (nodo *BNodo) traverse() {
-	i := 0
-	for i = 0; i < nodo.llaves; i++ {
-		if nodo.hoja == false {
-			nodo.hijos[i].traverse()
+func (arbol *ArbolB) _GraficarGrafo(temp *BNodo, nods int) (string, int) {
+	grafo := ""
+	pivote := nods
+	str1 := ""
+	if temp != nil {
+		grafo += "Nodo" + strconv.Itoa(nods) + "[shape=record label=\"" + temp._GraficarGrafo() + "\"]\n"
+		nods += 1
+		for i := 0; i < temp.canth; i++ {
+			grafo += "Nodo" + strconv.Itoa(pivote) + "->" + "Nodo" + strconv.Itoa(nods) + ";\n"
+			str1, nods = arbol._GraficarGrafo(temp.hijos[i], nods)
+			grafo += str1
 		}
-		fmt.Print(nodo.usuarios[i].Dpi, ", ")
 	}
-	if nodo.hoja == false {
-		nodo.hijos[i].traverse()
+	return grafo, nods
+}
+
+func (nodo *BNodo) _GraficarGrafo() string {
+	graph := ""
+	usuario := nodo.usuarios[0]
+	for i := 0; i < nodo.llaves; i++ {
+		usuario = nodo.usuarios[i]
+		graph += "{" + usuario.Nombre + "|"
+		graph += usuario.Password + "|"
+		graph += strconv.Itoa(usuario.Dpi) + "|"
+		graph += usuario.Correo + "|"
+		graph += usuario.Cuenta + "}"
+		if i+1 != nodo.llaves {
+			graph += "|"
+		}
 	}
+	return graph
+}
+
+func (arbol *ArbolB) _GraficarGrafoENC(temp *BNodo, nods int) (string, int) {
+	grafo := ""
+	pivote := nods
+	str1 := ""
+	if temp != nil {
+		grafo += "Nodo" + strconv.Itoa(nods) + "[shape=record label=\"" + temp._GraficarGrafoENC() + "\"]\n"
+		nods += 1
+		for i := 0; i < temp.canth; i++ {
+			grafo += "Nodo" + strconv.Itoa(pivote) + "->" + "Nodo" + strconv.Itoa(nods) + ";\n"
+			str1, nods = arbol._GraficarGrafoENC(temp.hijos[i], nods)
+			grafo += str1
+		}
+	}
+	return grafo, nods
+}
+
+func (nodo *BNodo) _GraficarGrafoENC() string {
+	graph := ""
+	usuario := nodo.usuarios[0]
+	for i := 0; i < nodo.llaves; i++ {
+		usuario = nodo.usuarios[i]
+		graph += "{" + fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Nombre))) + "|"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password))) + "|"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi)))) + "|"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo))) + "|"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Cuenta))) + "}"
+		if i+1 != nodo.llaves {
+			graph += "|"
+		}
+	}
+	return graph
+}
+
+func (arbol *ArbolB) _GraficarGrafoSEN(temp *BNodo, nods int) (string, int) {
+	grafo := ""
+	pivote := nods
+	str1 := ""
+	if temp != nil {
+		grafo += "Nodo" + strconv.Itoa(nods) + "[shape=record label=\"" + temp._GraficarGrafoSEN() + "\"]\n"
+		nods += 1
+		for i := 0; i < temp.canth; i++ {
+			grafo += "Nodo" + strconv.Itoa(pivote) + "->" + "Nodo" + strconv.Itoa(nods) + ";\n"
+			str1, nods = arbol._GraficarGrafoENC(temp.hijos[i], nods)
+			grafo += str1
+		}
+	}
+	return grafo, nods
+}
+
+func (nodo *BNodo) _GraficarGrafoSEN() string {
+	graph := ""
+	usuario := nodo.usuarios[0]
+	for i := 0; i < nodo.llaves; i++ {
+		usuario = nodo.usuarios[i]
+		graph += "{" + usuario.Nombre + "|"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password))) + "|"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi)))) + "|"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo))) + "|"
+		graph += usuario.Cuenta + "}"
+		if i+1 != nodo.llaves {
+			graph += "|"
+		}
+	}
+	return graph
 }

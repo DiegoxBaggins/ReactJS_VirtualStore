@@ -30,6 +30,7 @@ var JsonPedidos EstructurasCreadas.Pedido
 var Pedidos EstructurasCreadas.ArbolAnio
 var Usuarios EstructurasCreadas.LecUsuarios
 var Graph EstructurasCreadas.Grafo
+var ArbolUsuarios EstructurasCreadas.ArbolB
 
 func main() {
 	pruebaMatriz()
@@ -61,6 +62,7 @@ func main() {
 	router.HandleFunc("/cargarusuarios", CargarUsuariosAPI).Methods("POST")
 	router.HandleFunc("/ingresar", IngresarAPlataformaAPI).Methods("GET")
 	router.HandleFunc("/cargargrafo", CargarGrafoAPI).Methods("POST")
+	router.HandleFunc("/arbolusuarios", DevolverImagenUsuariosAPI).Methods("GET")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -319,30 +321,34 @@ func pruebaMatriz() {
 	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 2018, Precio: 1, Cantidad: 1})
 	fmt.Println(arbol1)
 
-	arbolb := EstructurasCreadas.NewArbolB(5)
+	//arbolb := EstructurasCreadas.NewArbolB(5)
 	//for i := 1; i < 18; i++ {
 	//	arbolb.Insert(i)
 	//}
-	arbolb.Insert(1)
-	arbolb.Insert(15)
-	arbolb.Insert(3)
-	arbolb.Insert(5)
-	arbolb.Insert(4)
-	arbolb.Insert(21)
-	arbolb.Insert(31)
-	arbolb.Insert(24)
-	arbolb.Insert(28)
-	arbolb.Insert(18)
-	arbolb.Insert(19)
-	arbolb.Insert(51)
-	arbolb.Insert(2)
-	arbolb.Insert(12)
-	arbolb.Insert(26)
-	arbolb.Insert(7)
-	arbolb.Insert(8)
-	arbolb.Insert(9)
-	arbref := arbolb
-	fmt.Println(arbref)
+	/*
+		arbolb.Insert(1)
+		arbolb.Insert(15)
+		arbolb.Insert(3)
+		arbolb.Insert(5)
+		arbolb.Insert(4)
+		arbolb.Insert(21)
+		arbolb.Insert(31)
+		arbolb.Insert(24)
+		arbolb.Insert(28)
+		arbolb.Insert(18)
+		arbolb.Insert(19)
+		arbolb.Insert(51)
+		arbolb.Insert(2)
+		arbolb.Insert(12)
+		arbolb.Insert(26)
+		arbolb.Insert(7)
+		arbolb.Insert(8)
+		arbolb.Insert(9)
+		arbolb.GraficarGrafo()
+		arbref := arbolb
+		fmt.Println(arbref)
+
+	*/
 }
 
 /*
@@ -660,6 +666,7 @@ func CargarUsuariosAPI(w http.ResponseWriter, req *http.Request) {
 	contents := buf.String()
 	fmt.Println(contents)
 	_ = json.Unmarshal(buf.Bytes(), &Usuarios)
+	Usuarios.ConvertirArbol(&ArbolUsuarios)
 	usuaris := Usuarios
 	fmt.Print(usuaris)
 	encoder.SetIndent("", "    ")
@@ -698,4 +705,32 @@ func CargarGrafoAPI(w http.ResponseWriter, req *http.Request) {
 	encoder.SetIndent("", "    ")
 	fmt.Println("Esto es una peticion de tipo post")
 	_ = encoder.Encode("Grafo Cargado")
+}
+
+func DevolverImagenUsuariosAPI(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if len(Usuarios.Usuarios) == 0 {
+		_ = encoder.Encode("No hay Usuarios")
+	} else {
+		direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
+		ArbolUsuarios.GraficarGrafo()
+		f, _ := os.Open(direct + "usuarios.png")
+		reader := bufio.NewReader(f)
+		content, _ := ioutil.ReadAll(reader)
+		encoded1 := base64.StdEncoding.EncodeToString(content)
+		f, _ = os.Open(direct + "usuariosENC.png")
+		reader = bufio.NewReader(f)
+		content, _ = ioutil.ReadAll(reader)
+		encoded2 := base64.StdEncoding.EncodeToString(content)
+		f, _ = os.Open(direct + "usuariosSEN.png")
+		reader = bufio.NewReader(f)
+		content, _ = ioutil.ReadAll(reader)
+		encoded3 := base64.StdEncoding.EncodeToString(content)
+		type imagenes struct {
+			imagen1, imagen2, imagen3 string
+		}
+		var strs = imagenes{encoded1, encoded2, encoded3}
+		_ = encoder.Encode(strs)
+	}
 }

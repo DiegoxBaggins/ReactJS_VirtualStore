@@ -320,9 +320,27 @@ func pruebaMatriz() {
 	fmt.Println(arbol1)
 
 	arbolb := EstructurasCreadas.NewArbolB(5)
-	for i := 1; i < 18; i++ {
-		arbolb.Insertar(i)
-	}
+	//for i := 1; i < 18; i++ {
+	//	arbolb.Insert(i)
+	//}
+	arbolb.Insert(1)
+	arbolb.Insert(15)
+	arbolb.Insert(3)
+	arbolb.Insert(5)
+	arbolb.Insert(4)
+	arbolb.Insert(21)
+	arbolb.Insert(31)
+	arbolb.Insert(24)
+	arbolb.Insert(28)
+	arbolb.Insert(18)
+	arbolb.Insert(19)
+	arbolb.Insert(51)
+	arbolb.Insert(2)
+	arbolb.Insert(12)
+	arbolb.Insert(26)
+	arbolb.Insert(7)
+	arbolb.Insert(8)
+	arbolb.Insert(9)
 	arbref := arbolb
 	fmt.Println(arbref)
 }

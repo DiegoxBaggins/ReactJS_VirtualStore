@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import axios from 'axios';
+import HeaderAdmin from "./HeaderAdmin";
 
 const Server = "http://localhost:3000";
 
@@ -110,6 +111,7 @@ class SubirArchivos extends Component{
     render(){
         return (
             <div>
+                <HeaderAdmin />
                 <div className="center">
                     <div id="content">
                         <h2 className="subheader"> Lectura de Archivos </h2>

@@ -1,8 +1,7 @@
 import React, {Component} from 'react';
 import axios from 'axios';
-import Producto from "./Producto";
-import {ListItem} from "semantic-ui-react";
 import Anio from "./Anio";
+import HeaderAdmin from "./HeaderAdmin";
 
 const Server = "http://localhost:3000";
 
@@ -52,7 +51,7 @@ class SubirArchivos extends Component{
         });
         axios.get(`${Server}/aniosmesesimg`).then( (response) => {
             console.log(response);
-            if (response.data !== "No hay pedidos") {
+            if (response.data !== "No hay Pedidos") {
                 this.setState({
                     arbol: response.data
                 });
@@ -66,31 +65,34 @@ class SubirArchivos extends Component{
 
     render(){
         return (
-            <div className="center-2">
-                <div id="content-1">
-                    <h2 className="subheader"> Pedidos </h2>
-                    {this.state.arbol &&
-                    <img src={`data:image/formato;base64,${this.state.arbol}`}  alt="Imagen"/>
-                    }
-                    <div>
-                        <h2> Matriz </h2>
-                        {this.state.matriz &&
-                        <img src={`data:image/formato;base64,${this.state.matriz}`}  alt="Imagen"/>
+            <div>
+                <HeaderAdmin />
+                <div className="center-2">
+                    <div id="content-1">
+                        <h2 className="subheader"> Pedidos </h2>
+                        {this.state.arbol &&
+                        <img src={`data:image/formato;base64,${this.state.arbol}`}  alt="Imagen"/>
                         }
+                        <div>
+                            <h2> Matriz </h2>
+                            {this.state.matriz &&
+                            <img src={`data:image/formato;base64,${this.state.matriz}`}  alt="Imagen"/>
+                            }
+                        </div>
                     </div>
+                    <aside id="sidebar-1">
+                        <div id="search" className="sidebar-item">
+                            {this.state.anios[0] &&
+                                this.state.anios.map((anio, i) => {
+                                    return(
+                                        <Anio key={i} anio={anio} DevolverMatriz={this.DevolverMatriz}/>
+                                    )
+                                })
+                            }
+                        </div>
+                    </aside>
+                    <div className="clearfix"> </div>
                 </div>
-                <aside id="sidebar-1">
-                    <div id="search" className="sidebar-item">
-                        {this.state.anios[0] &&
-                            this.state.anios.map((anio, i) => {
-                                return(
-                                    <Anio key={i} anio={anio} DevolverMatriz={this.DevolverMatriz}/>
-                                )
-                            })
-                        }
-                    </div>
-                </aside>
-                <div className="clearfix"> </div>
             </div>
         )
     }

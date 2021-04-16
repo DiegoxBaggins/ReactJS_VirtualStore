@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import axios from "axios";
-import {Link} from "react-router-dom";
 import {Redirect} from "react-router";
 
 const Server = "http://127.0.0.1:3000";

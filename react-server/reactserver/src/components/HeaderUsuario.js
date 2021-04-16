@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import logo from '../assets/images/logo.png'
 import { NavLink } from 'react-router-dom';
 
-class Header extends Component{
+class HeaderUsuario extends Component{
 
     render(){
 
@@ -24,12 +24,6 @@ class Header extends Component{
                             <li>
                                 <NavLink to="/Carrito" activeClassName="active">Carrito</NavLink>
                             </li>
-                            <li>
-                                <NavLink to="/Admin" activeClassName="active"> Administrador</NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/uploads" activeClassName="active"> Uploads</NavLink>
-                            </li>
                         </ul>
                     </nav>
 
@@ -40,4 +34,4 @@ class Header extends Component{
     }
 }
 
-export default Header;
+export default HeaderUsuario;

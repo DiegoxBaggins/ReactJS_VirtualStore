@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import Tienda from './Tienda';
 import SidebarBuscador from "./SidebarBuscador";
+import HeaderUsuario from "./HeaderUsuario";
 
 const Server = "http://localhost:3000";
 
@@ -8,7 +9,6 @@ class Tiendas extends Component{
 
     state = {
         tiendas : [],
-        selectedFile: null,
         datos : null
     }
 
@@ -29,26 +29,29 @@ class Tiendas extends Component{
 
     render(){
         return (
-            <div className="center">
-                <div id="content">
-                    <h2 className="subheader"> Tiendas </h2>
+                <div>
+                <HeaderUsuario />
+                <div className="center">
+                    <div id="content">
+                        <h2 className="subheader"> Tiendas </h2>
 
-                    {!this.state.tiendas[0] &&
-                    <div>
-                        <h2> No se han ingresado tiendas </h2>
+                        {!this.state.tiendas[0] &&
+                        <div>
+                            <h2> No se han ingresado tiendas </h2>
+                        </div>
+                        }
+                        {/*Componente de Tiendas*/}
+                        {this.state.tiendas[0] &&
+                        this.state.tiendas.map((tienda, i) => {
+                            return (
+                                <Tienda key={i} tienda={tienda}/>
+                            )
+                        })
+                        }
                     </div>
-                    }
-                    {/*Componente de Tiendas*/}
-                    {this.state.tiendas[0] &&
-                    this.state.tiendas.map((tienda, i) => {
-                        return (
-                            <Tienda key={i} tienda={tienda}/>
-                        )
-                    })
-                    }
+                    <SidebarBuscador />
+                    <div className="clearfix"> </div>
                 </div>
-                <SidebarBuscador />
-                <div className="clearfix"> </div>
             </div>
         )
     }

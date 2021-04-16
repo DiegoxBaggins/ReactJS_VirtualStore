@@ -36,6 +36,24 @@ func NewArbolB(t int) *ArbolB {
 	return &ArbolB{NewBNodo(t, true), t}
 }
 
+func (arbol *ArbolB) ComprobarUser(dpi int, contra string) string{
+	usuario := arbol.BuscarUsuario(dpi)
+	if usuario == nil {
+		return ""
+	}else{
+		pass := fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password)))
+		if pass == contra {
+			switch usuario.Cuenta {
+			case "Admin": return "admin"
+			case "Usuario": return "usuario"
+			default: return "usuario"
+			}
+		} else{
+			return ""
+		}
+	}
+}
+
 func (arbol *ArbolB) BuscarUsuario(k int) *Usuario {
 	if arbol.raiz != nil {
 		return arbol._buscarUsuario(arbol.raiz, k)

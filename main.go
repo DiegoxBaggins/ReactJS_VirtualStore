@@ -30,10 +30,12 @@ var JsonPedidos EstructurasCreadas.Pedido
 var Pedidos EstructurasCreadas.ArbolAnio
 var Usuarios EstructurasCreadas.LecUsuarios
 var Graph EstructurasCreadas.Grafo
-var ArbolUsuarios EstructurasCreadas.ArbolB
+var ArbolUsuarios *EstructurasCreadas.ArbolB
 
 func main() {
 	pruebaMatriz()
+	ArbolUsuarios = EstructurasCreadas.NewArbolB(5)
+	ArbolUsuarios.Insert(&EstructurasCreadas.Usuario{Dpi: 1234567890101, Nombre: "EDD2021", Correo: "auxiliar@edd.com",  Password: "1234",  Cuenta: "Admin"})
 	//enrutador denominado router
 	router := mux.NewRouter()
 
@@ -60,9 +62,11 @@ func main() {
 	router.HandleFunc("/aniosmesesimg", DevolverImagenAniosAPI).Methods("GET")
 	router.HandleFunc("/matriz/{anio}/{mes}/{mesp}", DevolverImagenMatrizAPI).Methods("GET")
 	router.HandleFunc("/cargarusuarios", CargarUsuariosAPI).Methods("POST")
-	router.HandleFunc("/ingresar", IngresarAPlataformaAPI).Methods("GET")
+	router.HandleFunc("/ingresar", IngresarAPlataformaAPI).Methods("POST")
 	router.HandleFunc("/cargargrafo", CargarGrafoAPI).Methods("POST")
-	router.HandleFunc("/arbolusuarios", DevolverImagenUsuariosAPI).Methods("GET")
+	router.HandleFunc("/arbolusuarios1", DevolverImagenUsuarios1API).Methods("GET")
+	router.HandleFunc("/arbolusuarios2", DevolverImagenUsuarios2API).Methods("GET")
+	router.HandleFunc("/arbolusuarios3", DevolverImagenUsuarios3API).Methods("GET")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -353,9 +357,9 @@ func pruebaMatriz() {
 
 /*
 func setupCorsResponse(w *http.ResponseWriter, req *http.Request) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Authorization")
+	(*w).HeaderUsuario().Set("Access-Control-Allow-Origin", "*")
+	(*w).HeaderUsuario().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).HeaderUsuario().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Authorization")
 }
 */
 
@@ -666,9 +670,10 @@ func CargarUsuariosAPI(w http.ResponseWriter, req *http.Request) {
 	contents := buf.String()
 	fmt.Println(contents)
 	_ = json.Unmarshal(buf.Bytes(), &Usuarios)
-	Usuarios.ConvertirArbol(&ArbolUsuarios)
+	Usuarios.ConvertirArbol(ArbolUsuarios)
 	usuaris := Usuarios
 	fmt.Print(usuaris)
+	ArbolUsuarios.GraficarGrafo()
 	encoder.SetIndent("", "    ")
 	fmt.Println("Esto es una peticion de tipo post")
 	_ = encoder.Encode("Usuarios Cargados")
@@ -676,12 +681,23 @@ func CargarUsuariosAPI(w http.ResponseWriter, req *http.Request) {
 
 func IngresarAPlataformaAPI(w http.ResponseWriter, req *http.Request) {
 	//setupCorsResponse(&w, req)
+	type userIngreso struct {
+		Dpi int64 `json:"Dpi,omitempty"`
+		Password string `json:"Password,omitempty"`
+	}
+	var usuario = userIngreso{0, ""}
 	encoder := json.NewEncoder(w)
-	_ = json.NewDecoder(req.Body).Decode(&Usuarios)
-	fmt.Println(Usuarios)
+	_ = json.NewDecoder(req.Body).Decode(&usuario)
+	fmt.Println(usuario)
+	buscar := ArbolUsuarios.ComprobarUser(int(usuario.Dpi), usuario.Password)
 	encoder.SetIndent("", "    ")
-	fmt.Println("Esto es una peticion de tipo post")
-	_ = encoder.Encode("Usuarios Cargados")
+	if buscar == "" {
+		_ = encoder.Encode("F")
+	}else if buscar == "admin" {
+		_ = encoder.Encode("A")
+	}else if buscar == "usuario" {
+		_ = encoder.Encode("U")
+	}
 }
 
 func CargarGrafoAPI(w http.ResponseWriter, req *http.Request) {
@@ -707,30 +723,47 @@ func CargarGrafoAPI(w http.ResponseWriter, req *http.Request) {
 	_ = encoder.Encode("Grafo Cargado")
 }
 
-func DevolverImagenUsuariosAPI(w http.ResponseWriter, req *http.Request) {
+func DevolverImagenUsuarios1API(w http.ResponseWriter, req *http.Request) {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
 	if len(Usuarios.Usuarios) == 0 {
 		_ = encoder.Encode("No hay Usuarios")
 	} else {
 		direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
-		ArbolUsuarios.GraficarGrafo()
 		f, _ := os.Open(direct + "usuarios.png")
 		reader := bufio.NewReader(f)
 		content, _ := ioutil.ReadAll(reader)
 		encoded1 := base64.StdEncoding.EncodeToString(content)
-		f, _ = os.Open(direct + "usuariosENC.png")
-		reader = bufio.NewReader(f)
-		content, _ = ioutil.ReadAll(reader)
-		encoded2 := base64.StdEncoding.EncodeToString(content)
-		f, _ = os.Open(direct + "usuariosSEN.png")
-		reader = bufio.NewReader(f)
-		content, _ = ioutil.ReadAll(reader)
-		encoded3 := base64.StdEncoding.EncodeToString(content)
-		type imagenes struct {
-			imagen1, imagen2, imagen3 string
-		}
-		var strs = imagenes{encoded1, encoded2, encoded3}
-		_ = encoder.Encode(strs)
+		_ = encoder.Encode(encoded1)
+	}
+}
+
+func DevolverImagenUsuarios2API(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if len(Usuarios.Usuarios) == 0 {
+		_ = encoder.Encode("No hay Usuarios")
+	} else {
+		direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
+		f, _ := os.Open(direct + "usuariosENC.png")
+		reader := bufio.NewReader(f)
+		content, _ := ioutil.ReadAll(reader)
+		encoded1 := base64.StdEncoding.EncodeToString(content)
+		_ = encoder.Encode(encoded1)
+	}
+}
+
+func DevolverImagenUsuarios3API(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if len(Usuarios.Usuarios) == 0 {
+		_ = encoder.Encode("No hay Usuarios")
+	} else {
+		direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
+		f, _ := os.Open(direct + "usuariosSEN.png")
+		reader := bufio.NewReader(f)
+		content, _ := ioutil.ReadAll(reader)
+		encoded1 := base64.StdEncoding.EncodeToString(content)
+		_ = encoder.Encode(encoded1)
 	}
 }

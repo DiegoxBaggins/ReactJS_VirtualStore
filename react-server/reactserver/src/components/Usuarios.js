@@ -12,7 +12,8 @@ class Usuario extends Component{
         redirect: null,
         imagen1: null,
         imagen2: null,
-        imagen3: null
+        imagen3: null,
+        user: {}
     }
 
     dpiRef = React.createRef();
@@ -24,14 +25,57 @@ class Usuario extends Component{
 
     ConsultarDatos = async(e) => {
         e.preventDefault();
-        let dpi = this.dpiRef.current.value;
-        let pass = this.dpiRef.current.value;
-        let usuario = {
-            dpi : dpi,
-            password : pass
+        let dpi = parseInt(this.dpiRef.current.value);
+        let pass = this.passRef.current.value;
+        let nombre = this.nombreRef.current.value;
+        let correo = this.correoRef.current.value;
+        let cuenta = 'Usuario';
+        if(this.adminRef.current.checked){
+            cuenta = 'Admin'
         }
-        await axios.post(`${Server}/ingresar`, usuario).then(function (response) {
+        let usuario = {
+            Dpi : dpi,
+            Nombre : nombre,
+            Correo : correo,
+            Password : pass,
+            Cuenta: cuenta
+        }
+        await axios.post(`${Server}/newuser`, usuario).then(function (response) {
             console.log(response.data);
+            alert("Usuario registrado con exito");
+        });
+        await axios.get(`${Server}/arbolusuarios1`).then( (response) => {
+            console.log(response.data)
+            if (response.data !== "No hay Usuarios") {
+                this.setState({
+                    imagen1: response.data
+                });
+                console.log("lista no es vacia")
+            }else{
+                console.log("lista es vacia")
+            }
+        });
+        await axios.get(`${Server}/arbolusuarios2`).then( (response) => {
+            console.log(response.data)
+            if (response.data !== "No hay Usuarios") {
+                this.setState({
+                    imagen2: response.data
+                });
+                console.log("lista no es vacia")
+            }else{
+                console.log("lista es vacia")
+            }
+        });
+        await axios.get(`${Server}/arbolusuarios3`).then( (response) => {
+            console.log(response.data)
+            if (response.data !== "No hay Usuarios") {
+                this.setState({
+                    imagen3: response.data
+                });
+                console.log("lista no es vacia")
+            }else{
+                console.log("lista es vacia")
+            }
         });
     }
 
@@ -93,22 +137,31 @@ class Usuario extends Component{
                             </div>
                             <div className="form-group">
                                 <label htmlFor="password">Contrasena</label>
-                                <input type="text" name="password" ref={this.passRef}/>
+                                <input type="password" name="password" ref={this.passRef}/>
                             </div>
                             <div className="form-group radibuttons">
-                                <input type="radio" name="usuario" value="admin" ref={this.adminRef}/> Admin
-                                <input type="radio" name="usuario" value="usuario" ref={this.usuarioRef}/> Usuario
+                                <input type="radio" name="usuario" value="Admin" ref={this.adminRef}/> Admin
+                                <input type="radio" name="usuario" value="Usuario" ref={this.usuarioRef}/> Usuario
                             </div>
                             <div className="clearfix"> </div>
                             <input type="submit" value="Enviar" className="btn btn-success"/>
                         </form>
                     <div className="clearfix"> </div>
+                    <hr/>
+                    <h2>Arbol sin cifrar</h2>
+                    <hr/>
                     {this.state.imagen1 &&
                     <img src={`data:image/formato;base64,${this.state.imagen1}`}  alt="Imagen"/>
                     }
+                    <hr/>
+                    <h2>Arbol cifrado</h2>
+                    <hr/>
                     {this.state.imagen2 &&
                     <img src={`data:image/formato;base64,${this.state.imagen2}`}  alt="Imagen"/>
                     }
+                    <hr/>
+                    <h2>Arbol con cifrado sensible</h2>
+                    <hr/>
                     {this.state.imagen3 &&
                     <img src={`data:image/formato;base64,${this.state.imagen3}`}  alt="Imagen"/>
                     }

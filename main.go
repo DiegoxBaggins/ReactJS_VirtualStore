@@ -67,6 +67,8 @@ func main() {
 	router.HandleFunc("/arbolusuarios1", DevolverImagenUsuarios1API).Methods("GET")
 	router.HandleFunc("/arbolusuarios2", DevolverImagenUsuarios2API).Methods("GET")
 	router.HandleFunc("/arbolusuarios3", DevolverImagenUsuarios3API).Methods("GET")
+	router.HandleFunc("/paquetecamino", DevolverImagenGrafoAPI).Methods("GET")
+	router.HandleFunc("/newuser", RegistrarNuevoUsuarioAPI).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -325,11 +327,17 @@ func pruebaMatriz() {
 	arbol1.Insertar(EstructurasCreadas.Product{Codigo: 2018, Precio: 1, Cantidad: 1})
 	fmt.Println(arbol1)
 
-	//arbolb := EstructurasCreadas.NewArbolB(5)
-	//for i := 1; i < 18; i++ {
-	//	arbolb.Insert(i)
-	//}
 	/*
+	arbolb := EstructurasCreadas.NewArbolB(5)
+	for i := 1; i <= 256; i++ {
+		arbolb.Insert(&EstructurasCreadas.Usuario{Dpi: rand.Intn(10000000), Nombre: "nom", Correo: "cor", Password: "pass", Cuenta: "admin"})
+		if i == 25{
+			fmt.Println(i)
+		}
+	}
+	afefe:= arbolb
+	afefe.GraficarGrafo()
+
 		arbolb.Insert(1)
 		arbolb.Insert(15)
 		arbolb.Insert(3)
@@ -726,26 +734,46 @@ func CargarGrafoAPI(w http.ResponseWriter, req *http.Request) {
 func DevolverImagenUsuarios1API(w http.ResponseWriter, req *http.Request) {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
-	if len(Usuarios.Usuarios) == 0 {
-		_ = encoder.Encode("No hay Usuarios")
-	} else {
-		direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
-		f, _ := os.Open(direct + "usuarios.png")
-		reader := bufio.NewReader(f)
-		content, _ := ioutil.ReadAll(reader)
-		encoded1 := base64.StdEncoding.EncodeToString(content)
-		_ = encoder.Encode(encoded1)
-	}
+	ArbolUsuarios.GraficarGrafo()
+	direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
+	f, _ := os.Open(direct + "usuarios.png")
+	reader := bufio.NewReader(f)
+	content, _ := ioutil.ReadAll(reader)
+	encoded1 := base64.StdEncoding.EncodeToString(content)
+	_ = encoder.Encode(encoded1)
 }
 
 func DevolverImagenUsuarios2API(w http.ResponseWriter, req *http.Request) {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
-	if len(Usuarios.Usuarios) == 0 {
-		_ = encoder.Encode("No hay Usuarios")
+	direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
+	f, _ := os.Open(direct + "usuariosENC.png")
+	reader := bufio.NewReader(f)
+	content, _ := ioutil.ReadAll(reader)
+	encoded1 := base64.StdEncoding.EncodeToString(content)
+	_ = encoder.Encode(encoded1)
+}
+
+func DevolverImagenUsuarios3API(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
+	f, _ := os.Open(direct + "usuariosSEN.png")
+	reader := bufio.NewReader(f)
+	content, _ := ioutil.ReadAll(reader)
+	encoded1 := base64.StdEncoding.EncodeToString(content)
+	_ = encoder.Encode(encoded1)
+}
+
+func DevolverImagenGrafoAPI(w http.ResponseWriter, req *http.Request) {
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	if len(Graph.Nodos) == 0 {
+		_ = encoder.Encode("No hay Grafo")
 	} else {
-		direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
-		f, _ := os.Open(direct + "usuariosENC.png")
+		Graph.GraficarGrafo()
+		direct := "./react-server/reactserver/src/assets/images/grafos/paquete/"
+		f, _ := os.Open(direct + "paquete.png")
 		reader := bufio.NewReader(f)
 		content, _ := ioutil.ReadAll(reader)
 		encoded1 := base64.StdEncoding.EncodeToString(content)
@@ -753,17 +781,13 @@ func DevolverImagenUsuarios2API(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func DevolverImagenUsuarios3API(w http.ResponseWriter, req *http.Request) {
+func RegistrarNuevoUsuarioAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	var usuario = EstructurasCreadas.Usuario{}
 	encoder := json.NewEncoder(w)
+	_ = json.NewDecoder(req.Body).Decode(&usuario)
+	fmt.Println(usuario)
+	ArbolUsuarios.Insert(&usuario)
 	encoder.SetIndent("", "    ")
-	if len(Usuarios.Usuarios) == 0 {
-		_ = encoder.Encode("No hay Usuarios")
-	} else {
-		direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
-		f, _ := os.Open(direct + "usuariosSEN.png")
-		reader := bufio.NewReader(f)
-		content, _ := ioutil.ReadAll(reader)
-		encoded1 := base64.StdEncoding.EncodeToString(content)
-		_ = encoder.Encode(encoded1)
-	}
+	_ = encoder.Encode(usuario)
 }

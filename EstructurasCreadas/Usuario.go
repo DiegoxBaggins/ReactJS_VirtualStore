@@ -46,7 +46,7 @@ func (arbol *ArbolB) ComprobarUser(dpi int, contra string) string{
 			switch usuario.Cuenta {
 			case "Admin": return "admin"
 			case "Usuario": return "usuario"
-			default: return "usuario"
+			default: return ""
 			}
 		} else{
 			return ""
@@ -102,18 +102,17 @@ func (arbol *ArbolB) Split(nodo1 *BNodo) *BNodo {
 	for i = nodo1.t / 2; i < nodo1.t; i++ {
 		nuevoNodo.usuarios[j] = nodo1.usuarios[i]
 		nodo1.usuarios[i] = nil
-		if !nodo1.hoja {
-			nuevoNodo.hijos[j+1] = nodo1.hijos[i+1]
-			nodo1.hijos[i+1] = nil
-			nuevoNodo.canth += 1
-		}
 		j += 1
 		nuevoNodo.llaves += 1
 	}
+	j = 0
 	if !nodo1.hoja {
-		nuevoNodo.hijos[j] = nodo1.hijos[i+1]
-		nodo1.hijos[i+1] = nil
-		nuevoNodo.canth += 1
+		for i = nodo1.t / 2 + 1; i < nodo1.canth; i++ {
+			nuevoNodo.hijos[j] = nodo1.hijos[i]
+			nodo1.hijos[i] = nil
+			nuevoNodo.canth += 1
+			j += 1
+		}
 		nodo1.canth /= 2
 	}
 	nodo1.llaves = nodo1.t / 2
@@ -313,10 +312,10 @@ func (nodo *BNodo) _GraficarGrafo() string {
 	usuario := nodo.usuarios[0]
 	for i := 0; i < nodo.llaves; i++ {
 		usuario = nodo.usuarios[i]
-		graph += "{" + usuario.Nombre + "|"
-		graph += usuario.Password + "|"
-		graph += strconv.Itoa(usuario.Dpi) + "|"
-		graph += usuario.Correo + "|"
+		graph += "{Usuario: " + usuario.Nombre + "| Password:"
+		graph += usuario.Password + "| DPI:"
+		graph += strconv.Itoa(usuario.Dpi) + "| Correo:"
+		graph += usuario.Correo + "| Cuenta:"
 		graph += usuario.Cuenta + "}"
 		if i+1 != nodo.llaves {
 			graph += "|"
@@ -346,10 +345,10 @@ func (nodo *BNodo) _GraficarGrafoENC() string {
 	usuario := nodo.usuarios[0]
 	for i := 0; i < nodo.llaves; i++ {
 		usuario = nodo.usuarios[i]
-		graph += "{" + fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Nombre))) + "|"
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password))) + "|"
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi)))) + "|"
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo))) + "|"
+		graph += "{Usuario: " + fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Nombre))) + "|Password: "
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password))) + "|DPI: "
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi)))) + "|Correo: "
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo))) + "|Cuenta:"
 		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Cuenta))) + "}"
 		if i+1 != nodo.llaves {
 			graph += "|"
@@ -367,7 +366,7 @@ func (arbol *ArbolB) _GraficarGrafoSEN(temp *BNodo, nods int) (string, int) {
 		nods += 1
 		for i := 0; i < temp.canth; i++ {
 			grafo += "Nodo" + strconv.Itoa(pivote) + "->" + "Nodo" + strconv.Itoa(nods) + ";\n"
-			str1, nods = arbol._GraficarGrafoENC(temp.hijos[i], nods)
+			str1, nods = arbol._GraficarGrafoSEN(temp.hijos[i], nods)
 			grafo += str1
 		}
 	}
@@ -379,10 +378,10 @@ func (nodo *BNodo) _GraficarGrafoSEN() string {
 	usuario := nodo.usuarios[0]
 	for i := 0; i < nodo.llaves; i++ {
 		usuario = nodo.usuarios[i]
-		graph += "{" + usuario.Nombre + "|"
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password))) + "|"
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi)))) + "|"
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo))) + "|"
+		graph += "{Usuario:" + usuario.Nombre + "|Password:"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password))) + "|DPI:"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi)))) + "|Correo:"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo))) + "|Cuenta:"
 		graph += usuario.Cuenta + "}"
 		if i+1 != nodo.llaves {
 			graph += "|"

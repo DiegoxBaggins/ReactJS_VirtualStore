@@ -12,7 +12,8 @@ class SubirArchivos extends Component{
         selectedFile: null,
         datos : null,
         arbol : null,
-        matriz : null
+        matriz : null,
+        camino : null
     }
 
     DevolverMatriz = (anio, mes, mesnum) => {
@@ -61,6 +62,18 @@ class SubirArchivos extends Component{
                 console.log("lista es vacia")
             }
         });
+        axios.get(`${Server}/paquetecamino`).then( (response) => {
+            console.log(response);
+            if (response.data !== "No hay Grafo") {
+                this.setState({
+                    camino: response.data
+                });
+                console.log("lista no es vacia")
+                console.log(response.data)
+            }else{
+                console.log("lista es vacia")
+            }
+        });
     }
 
     render(){
@@ -77,6 +90,13 @@ class SubirArchivos extends Component{
                             <h2> Matriz </h2>
                             {this.state.matriz &&
                             <img src={`data:image/formato;base64,${this.state.matriz}`}  alt="Imagen"/>
+                            }
+                        </div>
+                        <hr/>
+                        <div>
+                            <h2> Grafo pedidos </h2>
+                            {this.state.camino &&
+                            <img src={`data:image/formato;base64,${this.state.camino}`}  alt="Imagen"/>
                             }
                         </div>
                     </div>

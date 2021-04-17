@@ -631,28 +631,28 @@ func (central *CabeceraCen) InsertarNodoM(dia int, nombre string) {
 	if aux == nil {
 		arreglo1 := make([]ProductPedido, 0)
 		nodoC := &CuerpoM{nombre, dia, nil, nil, nil, nil, arreglo1}
-		cabhor.BuscarEspacioH(nombre, nodoC)
-		cabver.BuscarEspacioV(dia, nodoC)
+		cabhor.BuscarEspacioH(nodoC)
+		cabver.BuscarEspacioV(nodoC)
 	}
 }
 
-func (cab1 *CabeceraH) BuscarEspacioH(nombre string, m *CuerpoM) {
+func (cab1 *CabeceraH) BuscarEspacioH(m *CuerpoM) {
 	if cab1.elementos == 0 {
 		cab1.derecho = m
 		cab1.elementos += 1
 	} else if cab1.elementos == 1 {
-		if cab1.derecho.nombre < nombre {
+		if cab1.derecho.dia < m.dia {
 			cab1.derecho.derecha = m
 			m.izquierda = cab1.derecho
 		} else {
-			cab1.derecho.izquierda = m
 			m.derecha = cab1.derecho
+			cab1.derecho.izquierda = m
 			cab1.derecho = m
 		}
 		cab1.elementos += 1
 	} else {
 		aux := cab1.derecho
-		if aux.nombre > nombre {
+		if aux.dia > m.dia {
 			aux.izquierda = m
 			m.derecha = aux
 			cab1.derecho = m
@@ -685,12 +685,12 @@ func (cab1 *CabeceraH) _BuscarEspacioH(m *CuerpoM, cab *CuerpoM) {
 	}
 }
 
-func (cab1 *CabeceraV) BuscarEspacioV(dia int, m *CuerpoM) {
+func (cab1 *CabeceraV) BuscarEspacioV(m *CuerpoM) {
 	if cab1.elementos == 0 {
 		cab1.abajo = m
 		cab1.elementos += 1
 	} else if cab1.elementos == 1 {
-		if cab1.abajo.dia < dia {
+		if cab1.abajo.nombre < m.nombre {
 			cab1.abajo.abajo = m
 			m.arriba = cab1.abajo
 		} else {
@@ -701,8 +701,8 @@ func (cab1 *CabeceraV) BuscarEspacioV(dia int, m *CuerpoM) {
 		cab1.elementos += 1
 	} else {
 		aux := cab1.abajo
-		if aux.dia > dia {
-			aux.izquierda = m
+		if aux.nombre > m.nombre {
+			aux.arriba = m
 			m.abajo = aux
 			cab1.abajo = m
 		} else {
@@ -778,44 +778,72 @@ func (central *CabeceraCen) GraficarGrafo(anio string, mes string){
 	}
 }
 
-func (central *CabeceraCen) _Graficar() string {
-	grafo := "A0"
+func (central CabeceraCen) _Graficar() string {
+	grafo := "NodoAA0[label=\"\"]\n"
 	auxhor := central.hor
 	for i:=0 ; i < central.numh; i++{
-		grafo += "--" + auxhor.nombre
+		grafo += "NodoA" + strconv.Itoa(i) + "[label=\"" + auxhor.nombre + "\"]\n"
 		auxhor = auxhor.abajo
 	}
-	grafo += "\n"
 	auxver := central.ver
 	for i:=0 ; i < central.numv; i++{
-		grafo += strconv.Itoa(auxver.dia)
+		grafo += "NodoB" + strconv.Itoa(auxver.dia) + "[label=\"" + strconv.Itoa(auxver.dia) + "\"]\n"
 		auxcuerpo:= auxver.abajo
 		for j:=0 ; j < auxver.elementos; j++{
-			grafo += "--" + auxcuerpo.nombre + strconv.Itoa(auxcuerpo.dia)
+			grafo += "Nodo" +central._BuscarNombreNodo(auxcuerpo.nombre) + strconv.Itoa(auxcuerpo.dia) + "[label=\"Tiene " + strconv.Itoa(len(auxcuerpo.pedidos)) + "\"]\n"
 			auxcuerpo = auxcuerpo.abajo
 		}
 		grafo += "\n"
 		auxver = auxver.derecha
 	}
-	grafo += "rank=same {A0 "
+	auxhor = central.hor
+	grafo += "NodoAA0"
+	for i:=0 ; i < central.numh; i++{
+		grafo += "--NodoA" + strconv.Itoa(i)
+		auxhor = auxhor.abajo
+	}
+	grafo += "\n"
 	auxver = central.ver
 	for i:=0 ; i < central.numv; i++{
-		grafo += "--" + strconv.Itoa(auxver.dia)
+		grafo += "NodoB" +strconv.Itoa(auxver.dia)
+		auxcuerpo:= auxver.abajo
+		for j:=0 ; j < auxver.elementos; j++{
+			grafo += "--Nodo" +central._BuscarNombreNodo(auxcuerpo.nombre) + strconv.Itoa(auxcuerpo.dia)
+			auxcuerpo = auxcuerpo.abajo
+		}
+		grafo += "\n"
+		auxver = auxver.derecha
+	}
+	grafo += "rank=same {NodoAA0"
+	auxver = central.ver
+	for i:=0 ; i < central.numv; i++{
+		grafo += "--NodoB" + strconv.Itoa(auxver.dia)
 		auxver = auxver.derecha
 	}
 	grafo += "}\n"
 	auxhor = central.hor
 	for i:=0 ; i < central.numh; i++{
-		grafo += "rank=same {" + auxhor.nombre
+		grafo += "rank=same {NodoA" + central._BuscarNombreNodo(auxhor.nombre)
 		auxcuerpo:= auxhor.derecho
 		for j:=0 ; j < auxhor.elementos; j++{
-			grafo += "--" + auxcuerpo.nombre + strconv.Itoa(auxcuerpo.dia)
+			grafo += "--Nodo" + central._BuscarNombreNodo(auxcuerpo.nombre) + strconv.Itoa(auxcuerpo.dia)
 			auxcuerpo = auxcuerpo.derecha
 		}
 		grafo += "}\n"
 		auxhor = auxhor.abajo
 	}
 	return grafo
+}
+
+func (central *CabeceraCen) _BuscarNombreNodo(nombre string)	string {
+	auxhor := central.hor
+	for i:=0 ; i < central.numh; i++{
+		if auxhor.nombre == nombre{
+			return strconv.Itoa(i)
+		}
+		auxhor = auxhor.abajo
+	}
+	return ""
 }
 
 type ProductPedido struct {

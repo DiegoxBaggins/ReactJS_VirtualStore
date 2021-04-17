@@ -24,6 +24,9 @@ class HeaderUsuario extends Component{
                             <li>
                                 <NavLink to="/Carrito" activeClassName="active">Carrito</NavLink>
                             </li>
+                            <li>
+                                <NavLink to="/" activeClassName="active"> Salir</NavLink>
+                            </li>
                         </ul>
                     </nav>
 

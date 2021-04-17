@@ -31,10 +31,14 @@ class InicioSesion extends Component{
                 alert("Datos erroneos");
             }else{
                 if (respuesta === "A"){
+                    localStorage.setItem('DPI',this.dpiRef.current.value);
+                    localStorage.setItem('Tipo',"Admin");
                     this.setState({
                         redirect: "/admin"
                     })
                 }else{
+                    localStorage.setItem('DPI',this.dpiRef.current.value);
+                    localStorage.setItem('Tipo',"Usuario");
                     this.setState({
                         redirect: "/Home"
                     })
@@ -61,7 +65,7 @@ class InicioSesion extends Component{
                         </div>
                         <div className="form-group">
                             <label htmlFor="password">Contrasena</label>
-                            <input type="text" name="password" ref={this.passRef}/>
+                            <input type="password" name="password" ref={this.passRef}/>
                         </div>
                         <div className="clearfix"> </div>
                         <input type="submit" value="Enviar" className="btn btn-success"/>

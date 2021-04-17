@@ -27,6 +27,9 @@ class HeaderAdmin extends Component{
                             <li>
                                 <NavLink to="/usuarios" activeClassName="active"> Usuarios</NavLink>
                             </li>
+                            <li>
+                                <NavLink to="/" activeClassName="active"> Salir</NavLink>
+                            </li>
                         </ul>
                     </nav>
 

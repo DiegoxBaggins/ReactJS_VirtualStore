@@ -31,11 +31,13 @@ var Pedidos EstructurasCreadas.ArbolAnio
 var Usuarios EstructurasCreadas.LecUsuarios
 var Graph EstructurasCreadas.Grafo
 var ArbolUsuarios *EstructurasCreadas.ArbolB
+var ELI []EstructurasCreadas.Usuario
+var Clave string
 
 func main() {
 	pruebaMatriz()
 	ArbolUsuarios = EstructurasCreadas.NewArbolB(5)
-	ArbolUsuarios.Insert(&EstructurasCreadas.Usuario{Dpi: 1234567890101, Nombre: "EDD2021", Correo: "auxiliar@edd.com",  Password: "1234",  Cuenta: "Admin"})
+	ArbolUsuarios.Insert(&EstructurasCreadas.Usuario{Dpi: 1234567890101, Nombre: "EDD2021", Correo: "auxiliar@edd.com", Password: "1234", Cuenta: "Admin"})
 	//enrutador denominado router
 	router := mux.NewRouter()
 
@@ -69,6 +71,8 @@ func main() {
 	router.HandleFunc("/arbolusuarios3", DevolverImagenUsuarios3API).Methods("GET")
 	router.HandleFunc("/paquetecamino", DevolverImagenGrafoAPI).Methods("GET")
 	router.HandleFunc("/newuser", RegistrarNuevoUsuarioAPI).Methods("POST")
+	router.HandleFunc("/borrarUsuario", BorrarUsuarioAPI).Methods("POST")
+	router.HandleFunc("/establecerClave", EstablecerClaveAPI).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -328,39 +332,47 @@ func pruebaMatriz() {
 	fmt.Println(arbol1)
 
 	/*
-	arbolb := EstructurasCreadas.NewArbolB(5)
-	for i := 1; i <= 256; i++ {
-		arbolb.Insert(&EstructurasCreadas.Usuario{Dpi: rand.Intn(10000000), Nombre: "nom", Correo: "cor", Password: "pass", Cuenta: "admin"})
-		if i == 25{
-			fmt.Println(i)
+		arbolb := EstructurasCreadas.NewArbolB(5)
+		for i := 1; i <= 256; i++ {
+			arbolb.Insert(&EstructurasCreadas.Usuario{Dpi: rand.Intn(10000000), Nombre: "nom", Correo: "cor", Password: "pass", Cuenta: "admin"})
+			if i == 25{
+				fmt.Println(i)
+			}
 		}
-	}
-	afefe:= arbolb
-	afefe.GraficarGrafo()
+		afefe:= arbolb
+		afefe.GraficarGrafo()
 
-		arbolb.Insert(1)
-		arbolb.Insert(15)
-		arbolb.Insert(3)
-		arbolb.Insert(5)
-		arbolb.Insert(4)
-		arbolb.Insert(21)
-		arbolb.Insert(31)
-		arbolb.Insert(24)
-		arbolb.Insert(28)
-		arbolb.Insert(18)
-		arbolb.Insert(19)
-		arbolb.Insert(51)
-		arbolb.Insert(2)
-		arbolb.Insert(12)
-		arbolb.Insert(26)
-		arbolb.Insert(7)
-		arbolb.Insert(8)
-		arbolb.Insert(9)
-		arbolb.GraficarGrafo()
-		arbref := arbolb
-		fmt.Println(arbref)
+			arbolb.Insert(1)
+			arbolb.Insert(15)
+			arbolb.Insert(3)
+			arbolb.Insert(5)
+			arbolb.Insert(4)
+			arbolb.Insert(21)
+			arbolb.Insert(31)
+			arbolb.Insert(24)
+			arbolb.Insert(28)
+			arbolb.Insert(18)
+			arbolb.Insert(19)
+			arbolb.Insert(51)
+			arbolb.Insert(2)
+			arbolb.Insert(12)
+			arbolb.Insert(26)
+			arbolb.Insert(7)
+			arbolb.Insert(8)
+			arbolb.Insert(9)
+			arbolb.GraficarGrafo()
+			arbref := arbolb
+			fmt.Println(arbref)
 
 	*/
+	merkle := EstructurasCreadas.NuevoMerk()
+	for i := 0; i < 9; i++ {
+		merkle.AgregarNodos(i, float64(i))
+	}
+	merkle.CrearArbol()
+	merkle.GraficarGrafo()
+	merkle.AgregarNodos(15, float64(15))
+
 }
 
 /*
@@ -681,31 +693,61 @@ func CargarUsuariosAPI(w http.ResponseWriter, req *http.Request) {
 	Usuarios.ConvertirArbol(ArbolUsuarios)
 	usuaris := Usuarios
 	fmt.Print(usuaris)
-	ArbolUsuarios.GraficarGrafo()
+	ArbolUsuarios.GraficarGrafo(Clave)
 	encoder.SetIndent("", "    ")
 	fmt.Println("Esto es una peticion de tipo post")
 	_ = encoder.Encode("Usuarios Cargados")
 }
 
+func EstablecerClaveAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	type Code struct {
+		Clave string `json:"Clave,omitempty"`
+	}
+	clave := Code{Clave: ""}
+	encoder := json.NewEncoder(w)
+	_ = json.NewDecoder(req.Body).Decode(&clave)
+	fmt.Println(clave)
+	Clave = clave.Clave
+	encoder.SetIndent("", "    ")
+	_ = encoder.Encode(Clave)
+}
+
 func IngresarAPlataformaAPI(w http.ResponseWriter, req *http.Request) {
 	//setupCorsResponse(&w, req)
 	type userIngreso struct {
-		Dpi int64 `json:"Dpi,omitempty"`
+		Dpi      int64  `json:"Dpi,omitempty"`
 		Password string `json:"Password,omitempty"`
 	}
 	var usuario = userIngreso{0, ""}
 	encoder := json.NewEncoder(w)
 	_ = json.NewDecoder(req.Body).Decode(&usuario)
 	fmt.Println(usuario)
-	buscar := ArbolUsuarios.ComprobarUser(int(usuario.Dpi), usuario.Password)
+	buscar := ArbolUsuarios.ComprobarUser(int(usuario.Dpi), usuario.Password, ELI)
 	encoder.SetIndent("", "    ")
 	if buscar == "" {
 		_ = encoder.Encode("F")
-	}else if buscar == "admin" {
+	} else if buscar == "admin" {
 		_ = encoder.Encode("A")
-	}else if buscar == "usuario" {
+	} else if buscar == "usuario" {
 		_ = encoder.Encode("U")
 	}
+}
+
+func BorrarUsuarioAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	type userIngreso struct {
+		Dpi      int64  `json:"Dpi,omitempty"`
+		Password string `json:"Password,omitempty"`
+	}
+	var usuario = userIngreso{0, ""}
+	encoder := json.NewEncoder(w)
+	_ = json.NewDecoder(req.Body).Decode(&usuario)
+	fmt.Println(usuario)
+	buscar, lista := ArbolUsuarios.EliminarUsuario(int(usuario.Dpi), usuario.Password, ELI)
+	ELI = lista
+	encoder.SetIndent("", "    ")
+	_ = encoder.Encode(buscar)
 }
 
 func CargarGrafoAPI(w http.ResponseWriter, req *http.Request) {
@@ -734,7 +776,7 @@ func CargarGrafoAPI(w http.ResponseWriter, req *http.Request) {
 func DevolverImagenUsuarios1API(w http.ResponseWriter, req *http.Request) {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
-	ArbolUsuarios.GraficarGrafo()
+	ArbolUsuarios.GraficarGrafo(Clave)
 	direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
 	f, _ := os.Open(direct + "usuarios.png")
 	reader := bufio.NewReader(f)

@@ -12,11 +12,23 @@ class SubirArchivos extends Component{
         datos : null
     }
 
+    claveRef = React.createRef();
+
     onFileChange = event => {
         // Update the state
         this.setState({ selectedFile: event.target.files[0] });
     };
 
+    EstablecerClave = (e) => {
+        e.preventDefault();
+        let clave = {
+            Clave: this.claveRef.current.value
+        };
+        console.log(clave);
+        axios.post(`${Server}/establecerClave`, clave).then(function (response) {
+            console.log(response);
+        });
+    };
     // On file upload (click the upload button)
     onFileUploadTienda = () => {
         const formData = new FormData();
@@ -131,6 +143,16 @@ class SubirArchivos extends Component{
                             <h2> Ingresar Usuarios </h2>
                             <input type="file" onChange={this.onFileChange} className="btn-upload" />
                             <button onClick={this.onFileUploadUser} className="btn-upload"> Subir </button>
+                            <hr/>
+                            <h2 className="subheader"> Ingresar Clave de ecriptacion </h2>
+                            <form className="mid-form" onSubmit={this.EstablecerClave}>
+                                <div className="form-group">
+                                    <label htmlFor="dpi">clave</label>
+                                    <input type="text" name="dpi" ref={this.claveRef}/>
+                                </div>
+                                <div className="clearfix"> </div>
+                                <input type="submit" value="Enviar" className="btn btn-success"/>
+                            </form>
                             <hr/>
                             <h2> Ingresar Grafo </h2>
                             <input type="file" onChange={this.onFileChange} className="btn-upload" />

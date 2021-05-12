@@ -1,8 +1,14 @@
 package EstructurasCreadas
 
 import (
+	"crypto/aes"
+	_ "crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha256"
+	b64 "encoding/base64"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -36,19 +42,38 @@ func NewArbolB(t int) *ArbolB {
 	return &ArbolB{NewBNodo(t, true), t}
 }
 
-func (arbol *ArbolB) ComprobarUser(dpi int, contra string) string{
+func (arbol *ArbolB) EliminarUsuario(dpi int, contra string, lista []Usuario) (string, []Usuario) {
+	comprobacion := arbol.ComprobarUser(dpi, contra, lista)
+	if comprobacion == "" {
+		return "No existe el usuario o los datos no coinciden", lista
+	} else {
+		usuario := Usuario{Dpi: dpi, Password: contra}
+		lista = append(lista, usuario)
+		return "Eliminacion Correcta", lista
+	}
+}
+
+func (arbol *ArbolB) ComprobarUser(dpi int, contra string, lista []Usuario) string {
+	for i := 0; i < len(lista); i++ {
+		if lista[i].Dpi == dpi && lista[i].Password == contra {
+			return ""
+		}
+	}
 	usuario := arbol.BuscarUsuario(dpi)
 	if usuario == nil {
 		return ""
-	}else{
+	} else {
 		pass := fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password)))
 		if pass == contra {
 			switch usuario.Cuenta {
-			case "Admin": return "admin"
-			case "Usuario": return "usuario"
-			default: return ""
+			case "Admin":
+				return "admin"
+			case "Usuario":
+				return "usuario"
+			default:
+				return ""
 			}
-		} else{
+		} else {
 			return ""
 		}
 	}
@@ -107,7 +132,7 @@ func (arbol *ArbolB) Split(nodo1 *BNodo) *BNodo {
 	}
 	j = 0
 	if !nodo1.hoja {
-		for i = nodo1.t / 2 + 1; i < nodo1.canth; i++ {
+		for i = nodo1.t/2 + 1; i < nodo1.canth; i++ {
 			nuevoNodo.hijos[j] = nodo1.hijos[i]
 			nodo1.hijos[i] = nil
 			nuevoNodo.canth += 1
@@ -238,7 +263,7 @@ func (arbol *ArbolB) InsertarUsuario(nodo *BNodo, usuario *Usuario, hijoDer *BNo
 	}
 }
 
-func (arbol *ArbolB) GraficarGrafo() {
+func (arbol *ArbolB) GraficarGrafo(clave string) {
 	direct := "./react-server/reactserver/src/assets/images/grafos/usuario/"
 	var graph = "digraph G{\n"
 	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
@@ -259,7 +284,7 @@ func (arbol *ArbolB) GraficarGrafo() {
 	}
 	graph = "digraph G{\n"
 	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
-	str1, _ = arbol._GraficarGrafoENC(arbol.raiz, 0)
+	str1, _ = arbol._GraficarGrafoENC(arbol.raiz, 0, clave)
 	graph += str1
 	graph += "\n}"
 	data = []byte(graph)
@@ -275,7 +300,7 @@ func (arbol *ArbolB) GraficarGrafo() {
 	}
 	graph = "digraph G{\n"
 	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
-	str1, _ = arbol._GraficarGrafoSEN(arbol.raiz, 0)
+	str1, _ = arbol._GraficarGrafoSEN(arbol.raiz, 0, clave)
 	graph += str1
 	graph += "\n}"
 	data = []byte(graph)
@@ -324,32 +349,32 @@ func (nodo *BNodo) _GraficarGrafo() string {
 	return graph
 }
 
-func (arbol *ArbolB) _GraficarGrafoENC(temp *BNodo, nods int) (string, int) {
+func (arbol *ArbolB) _GraficarGrafoENC(temp *BNodo, nods int, clave string) (string, int) {
 	grafo := ""
 	pivote := nods
 	str1 := ""
 	if temp != nil {
-		grafo += "Nodo" + strconv.Itoa(nods) + "[shape=record label=\"" + temp._GraficarGrafoENC() + "\"]\n"
+		grafo += "Nodo" + strconv.Itoa(nods) + "[shape=record label=\"" + temp._GraficarGrafoENC(clave) + "\"]\n"
 		nods += 1
 		for i := 0; i < temp.canth; i++ {
 			grafo += "Nodo" + strconv.Itoa(pivote) + "->" + "Nodo" + strconv.Itoa(nods) + ";\n"
-			str1, nods = arbol._GraficarGrafoENC(temp.hijos[i], nods)
+			str1, nods = arbol._GraficarGrafoENC(temp.hijos[i], nods, clave)
 			grafo += str1
 		}
 	}
 	return grafo, nods
 }
 
-func (nodo *BNodo) _GraficarGrafoENC() string {
+func (nodo *BNodo) _GraficarGrafoENC(clave string) string {
 	graph := ""
 	usuario := nodo.usuarios[0]
 	for i := 0; i < nodo.llaves; i++ {
 		usuario = nodo.usuarios[i]
-		graph += "{Usuario: " + fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Nombre))) + "|Password: "
+		graph += "{Usuario: " + fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Nombre)))[:15] + "|Password: "
 		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password))) + "|DPI: "
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi)))) + "|Correo: "
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo))) + "|Cuenta:"
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Cuenta))) + "}"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi))))[:15] + "|Correo: "
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo)))[:15] + "|Cuenta:"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Cuenta)))[:15] + "}"
 		if i+1 != nodo.llaves {
 			graph += "|"
 		}
@@ -357,35 +382,65 @@ func (nodo *BNodo) _GraficarGrafoENC() string {
 	return graph
 }
 
-func (arbol *ArbolB) _GraficarGrafoSEN(temp *BNodo, nods int) (string, int) {
+func (arbol *ArbolB) _GraficarGrafoSEN(temp *BNodo, nods int, clave string) (string, int) {
 	grafo := ""
 	pivote := nods
 	str1 := ""
 	if temp != nil {
-		grafo += "Nodo" + strconv.Itoa(nods) + "[shape=record label=\"" + temp._GraficarGrafoSEN() + "\"]\n"
+		grafo += "Nodo" + strconv.Itoa(nods) + "[shape=record label=\"" + temp._GraficarGrafoSEN(clave) + "\"]\n"
 		nods += 1
 		for i := 0; i < temp.canth; i++ {
 			grafo += "Nodo" + strconv.Itoa(pivote) + "->" + "Nodo" + strconv.Itoa(nods) + ";\n"
-			str1, nods = arbol._GraficarGrafoSEN(temp.hijos[i], nods)
+			str1, nods = arbol._GraficarGrafoSEN(temp.hijos[i], nods, clave)
 			grafo += str1
 		}
 	}
 	return grafo, nods
 }
 
-func (nodo *BNodo) _GraficarGrafoSEN() string {
+func (nodo *BNodo) _GraficarGrafoSEN(clave string) string {
 	graph := ""
 	usuario := nodo.usuarios[0]
 	for i := 0; i < nodo.llaves; i++ {
 		usuario = nodo.usuarios[i]
 		graph += "{Usuario:" + usuario.Nombre + "|Password:"
 		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Password))) + "|DPI:"
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi)))) + "|Correo:"
-		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo))) + "|Cuenta:"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(strconv.Itoa(usuario.Dpi))))[:15] + "|Correo:"
+		graph += fmt.Sprintf("%x", sha256.Sum256([]byte(usuario.Correo)))[:15] + "|Cuenta:"
 		graph += usuario.Cuenta + "}"
 		if i+1 != nodo.llaves {
 			graph += "|"
 		}
 	}
 	return graph
+}
+
+func encrypt(key []byte, message string) (encmess string, err error) {
+	tamano := 32 - len(key)
+	for i := 0; i < tamano; i++ {
+		var bite byte = 0
+		key = append(key, bite)
+	}
+	plainText := []byte(message)
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		fmt.Println(err)
+	}
+	//IV needs to be unique, but doesn't have to be secure.
+	//It's common to put it at the beginning of the ciphertext.
+	cipherText := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, cipherText); err != nil {
+		return
+	}
+	enc := gcm.Seal(cipherText, cipherText, plainText, nil)
+	sEnc := b64.StdEncoding.EncodeToString(enc)
+	str3, _ := b64.StdEncoding.DecodeString(sEnc)
+	texto := string(str3)
+	return texto, err
 }

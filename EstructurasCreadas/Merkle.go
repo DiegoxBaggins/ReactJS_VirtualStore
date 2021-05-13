@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strconv"
@@ -257,4 +258,21 @@ func (arbol *ArbolMerk) GraficarGrafoUsers() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+type BlockChain struct {
+	Indice       int
+	Fecha        string
+	Data         string
+	Nonce        int
+	PreviousHash string
+	HashActual   string
+}
+
+func NuevoBlock(indice int, data string, previo string) BlockChain {
+	currentTime := time.Now()
+	random := rand.Intn(10000)
+	str := strconv.Itoa(indice) + currentTime.Format("2006-01-02 15:04:05") + data + previo + strconv.Itoa(random)
+	id := fmt.Sprintf("%x", sha256.Sum256([]byte(str)))
+	return BlockChain{indice, currentTime.Format("2006-01-02 15:04:05"), data, random, previo, id}
 }

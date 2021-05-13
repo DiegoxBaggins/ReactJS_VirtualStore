@@ -17,6 +17,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var Datos EstructurasCreadas.Data
@@ -37,11 +38,14 @@ var MerkleTran EstructurasCreadas.ArbolMerk
 var MerkleTien EstructurasCreadas.ArbolMerk
 var MerkleProd EstructurasCreadas.ArbolMerk
 var MerkleUser EstructurasCreadas.ArbolMerk
+var BlockActual EstructurasCreadas.BlockChain
 
 func main() {
 	pruebaMatriz()
 	ArbolUsuarios = EstructurasCreadas.NewArbolB(5)
 	ArbolUsuarios.Insert(&EstructurasCreadas.Usuario{Dpi: 1234567890101, Nombre: "EDD2021", Correo: "auxiliar@edd.com", Password: "1234", Cuenta: "Admin"})
+	BlockActual = EstructurasCreadas.NuevoBlock(0, "", "")
+	go EscribirBlock()
 	//enrutador denominado router
 	router := mux.NewRouter()
 
@@ -87,6 +91,19 @@ func main() {
 	handler := c.Handler(router)
 	// iniciar el servidor en el puerto 3000
 	log.Fatal(http.ListenAndServe(":3000", handler))
+}
+
+func EscribirBlock() {
+	for {
+		time.Sleep(time.Second * 300)
+		MerkleTran.CrearArbol()
+		MerkleTran.GraficarGrafo()
+		data := MerkleTran.Raiz.Id + MerkleTien.Raiz.Id + MerkleProd.Raiz.Id + MerkleUser.Raiz.Id
+		block := EstructurasCreadas.NuevoBlock(BlockActual.Indice+1, data, BlockActual.HashActual)
+		file, _ := json.MarshalIndent(block, "", " ")
+		_ = ioutil.WriteFile("chains/"+strconv.Itoa(block.Indice)+".txt", file, 0644)
+		BlockActual = block
+	}
 }
 
 func CargarTienda(w http.ResponseWriter, req *http.Request) {
@@ -433,6 +450,8 @@ func CargarTiendasAPI(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(Vector)
 	TamaVec = len(Vector)
 	Indices, Departamentos = Datos.CalcularTamanos()
+	MerkleTien.AgregarNodosTiendas(Vector)
+	MerkleTien.GraficarGrafoTiendas()
 }
 
 func CargarInvenAPI(w http.ResponseWriter, req *http.Request) {
@@ -460,6 +479,8 @@ func CargarInvenAPI(w http.ResponseWriter, req *http.Request) {
 		fmt.Println(Inventario)
 		Inventario.SacarInventario(Vector, Indices, Departamentos)
 	}
+	MerkleProd.AgregarNodosProductos(Vector)
+	MerkleProd.GraficarGrafoProductos()
 }
 
 func DevolverInventarioAPI(w http.ResponseWriter, req *http.Request) {
@@ -703,6 +724,8 @@ func CargarUsuariosAPI(w http.ResponseWriter, req *http.Request) {
 	encoder.SetIndent("", "    ")
 	fmt.Println("Esto es una peticion de tipo post")
 	_ = encoder.Encode("Usuarios Cargados")
+	MerkleUser.AgregarNodosUsuarios(Usuarios.Usuarios)
+	MerkleUser.GraficarGrafoUsers()
 }
 
 func EstablecerClaveAPI(w http.ResponseWriter, req *http.Request) {

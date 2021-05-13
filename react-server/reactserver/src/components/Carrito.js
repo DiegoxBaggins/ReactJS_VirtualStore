@@ -43,6 +43,13 @@ class Carrito extends Component{
             productos: [],
             total: 0
         });
+        let var1 = {
+            User : localStorage.getItem("DPI"),
+            Total: String(this.state.total)
+        }
+        axios.post(`${Server}/generarTransaccion`, var1).then( (response) => {
+            console.log(response);
+        });
     }
 
     render(){

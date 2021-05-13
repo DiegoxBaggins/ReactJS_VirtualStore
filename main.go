@@ -33,6 +33,10 @@ var Graph EstructurasCreadas.Grafo
 var ArbolUsuarios *EstructurasCreadas.ArbolB
 var ELI []EstructurasCreadas.Usuario
 var Clave string
+var MerkleTran EstructurasCreadas.ArbolMerk
+var MerkleTien EstructurasCreadas.ArbolMerk
+var MerkleProd EstructurasCreadas.ArbolMerk
+var MerkleUser EstructurasCreadas.ArbolMerk
 
 func main() {
 	pruebaMatriz()
@@ -73,6 +77,8 @@ func main() {
 	router.HandleFunc("/newuser", RegistrarNuevoUsuarioAPI).Methods("POST")
 	router.HandleFunc("/borrarUsuario", BorrarUsuarioAPI).Methods("POST")
 	router.HandleFunc("/establecerClave", EstablecerClaveAPI).Methods("POST")
+	router.HandleFunc("/arbolesMerkle", DevolverImagenesMerkleAPI).Methods("GET")
+	router.HandleFunc("/generarTransaccion", GenerarTransaccionAPI).Methods("POST")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -367,11 +373,11 @@ func pruebaMatriz() {
 	*/
 	merkle := EstructurasCreadas.NuevoMerk()
 	for i := 0; i < 9; i++ {
-		merkle.AgregarNodos(i, float64(i))
+		merkle.AgregarNodos(strconv.Itoa(i), strconv.Itoa(i))
 	}
 	merkle.CrearArbol()
 	merkle.GraficarGrafo()
-	merkle.AgregarNodos(15, float64(15))
+	//merkle.AgregarNodos(15, float64(15))
 
 }
 
@@ -832,4 +838,58 @@ func RegistrarNuevoUsuarioAPI(w http.ResponseWriter, req *http.Request) {
 	ArbolUsuarios.Insert(&usuario)
 	encoder.SetIndent("", "    ")
 	_ = encoder.Encode(usuario)
+}
+
+func DevolverImagenesMerkleAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	MerkleTran.CrearArbol()
+	MerkleTran.GraficarGrafo()
+	MerkleTien.AgregarNodosTiendas(Vector)
+	MerkleTien.GraficarGrafoTiendas()
+	MerkleProd.AgregarNodosProductos(Vector)
+	MerkleProd.GraficarGrafoProductos()
+	MerkleUser.AgregarNodosUsuarios(Usuarios.Usuarios)
+	MerkleUser.GraficarGrafoUsers()
+	direct := "./react-server/reactserver/src/assets/images/grafos/merkle/"
+	f, _ := os.Open(direct + "transacciones.png")
+	reader := bufio.NewReader(f)
+	content, _ := ioutil.ReadAll(reader)
+	encoded1 := base64.StdEncoding.EncodeToString(content)
+	f, _ = os.Open(direct + "tiendas.png")
+	reader = bufio.NewReader(f)
+	content, _ = ioutil.ReadAll(reader)
+	encoded2 := base64.StdEncoding.EncodeToString(content)
+	f, _ = os.Open(direct + "productos.png")
+	reader = bufio.NewReader(f)
+	content, _ = ioutil.ReadAll(reader)
+	encoded3 := base64.StdEncoding.EncodeToString(content)
+	f, _ = os.Open(direct + "usuarios.png")
+	reader = bufio.NewReader(f)
+	content, _ = ioutil.ReadAll(reader)
+	encoded4 := base64.StdEncoding.EncodeToString(content)
+	type Imagenes struct {
+		Imagen1 string `json:"Imagen1,omitempty"`
+		Imagen2 string `json:"Imagen2,omitempty"`
+		Imagen3 string `json:"Imagen3,omitempty"`
+		Imagen4 string `json:"Imagen4,omitempty"`
+	}
+	var usuario = Imagenes{encoded1, encoded2, encoded3, encoded4}
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	_ = encoder.Encode(usuario)
+}
+
+func GenerarTransaccionAPI(w http.ResponseWriter, req *http.Request) {
+	//setupCorsResponse(&w, req)
+	type Transaccion struct {
+		User  string `json:"User,omitempty"`
+		Total string `json:"Total,omitempty"`
+	}
+	var trans = Transaccion{"", ""}
+	encoder := json.NewEncoder(w)
+	_ = json.NewDecoder(req.Body).Decode(&trans)
+	fmt.Println(trans)
+	MerkleTran.AgregarNodos(trans.User, trans.Total)
+	encoder.SetIndent("", "    ")
+	_ = encoder.Encode(trans)
 }

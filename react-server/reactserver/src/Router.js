@@ -7,6 +7,7 @@ import Carrito from "./components/Carrito";
 import AdminPedidos from "./components/AdminPedidos";
 import InicioSesion from "./components/InicioSesion";
 import Usuario from "./components/Usuarios";
+import Merkles from "./components/Merkles";
 
 
 
@@ -25,6 +26,7 @@ class Router extends Component{
                     <Route exact path="/usuarios" component={Usuario}/>
                     <Route exact path="/tienda" component={Productos}/>
                     <Route exact path="/Carrito" component={Carrito}/>
+                    <Route exact path="/Merkle" component={Merkles}/>
                 </Switch>
 
             </BrowserRouter>

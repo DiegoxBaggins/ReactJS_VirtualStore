@@ -95,6 +95,7 @@ func nextPowerOf2(v int) int {
 }
 
 func (arbol *ArbolMerk) GraficarGrafo() {
+	arbol.CrearArbol()
 	direct := "./react-server/reactserver/src/assets/images/grafos/merkle/"
 	var graph = "digraph G{\n"
 	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
@@ -152,11 +153,108 @@ func (nodo *NodoMerk) _GraficarGrafo() string {
 func (arbol *ArbolMerk) AgregarNodosTiendas(lista []ListaTienda) {
 	for i := 0; i < len(lista); i++ {
 		auxiliar := lista[i].primero
-		for i := 0; i < lista[i].elementos; i++ {
+		for j := 0; j < lista[i].elementos; j++ {
 			nodo := NuevoNodoMerkHoja(auxiliar.nombre, auxiliar.departamento)
 			arbol.Datos = append(arbol.Datos, nodo)
 			arbol.Num += 1
 			auxiliar = auxiliar.siguiente
 		}
+	}
+}
+
+func (arbol *ArbolMerk) GraficarGrafoTiendas() {
+	arbol.CrearArbol()
+	direct := "./react-server/reactserver/src/assets/images/grafos/merkle/"
+	var graph = "digraph G{\n"
+	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
+	str1, _ := arbol._GraficarGrafo(arbol.Raiz, 0)
+	graph += str1
+	graph += "\n}"
+	data := []byte(graph)
+	err := ioutil.WriteFile(direct+"tiendas.dot", data, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	path, _ := exec.LookPath("dot")
+	cmd, _ := exec.Command(path, "-Tpng", direct+"tiendas.dot").Output()
+	mode := int(0777)
+	err = ioutil.WriteFile(direct+"tiendas.png", cmd, os.FileMode(mode))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (arbol *ArbolMerk) AgregarNodosProductos(lista []ListaTienda) {
+	for i := 0; i < len(lista); i++ {
+		auxiliar := lista[i].primero
+		for j := 0; j < lista[i].elementos; j++ {
+			raiz := auxiliar.productos
+			raiz.AgregarNodoProductosMerkle(raiz.raiz, arbol)
+			auxiliar = auxiliar.siguiente
+		}
+	}
+}
+
+func (arbol *ArbolProd) AgregarNodoProductosMerkle(aux *Producto, merkle *ArbolMerk) {
+	nodo := NuevoNodoMerkHoja(aux.nombre, strconv.Itoa(int(aux.precio)))
+	merkle.Datos = append(merkle.Datos, nodo)
+	merkle.Num += 1
+	if aux.hizq != nil {
+		arbol.AgregarNodoProductosMerkle(aux.hizq, merkle)
+	}
+	if aux.hder != nil {
+		arbol.AgregarNodoProductosMerkle(aux.hder, merkle)
+	}
+}
+
+func (arbol *ArbolMerk) GraficarGrafoProductos() {
+	arbol.CrearArbol()
+	direct := "./react-server/reactserver/src/assets/images/grafos/merkle/"
+	var graph = "digraph G{\n"
+	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
+	str1, _ := arbol._GraficarGrafo(arbol.Raiz, 0)
+	graph += str1
+	graph += "\n}"
+	data := []byte(graph)
+	err := ioutil.WriteFile(direct+"productos.dot", data, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	path, _ := exec.LookPath("dot")
+	cmd, _ := exec.Command(path, "-Tpng", direct+"productos.dot").Output()
+	mode := int(0777)
+	err = ioutil.WriteFile(direct+"productos.png", cmd, os.FileMode(mode))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (arbol *ArbolMerk) AgregarNodosUsuarios(lista []Usuario) {
+	for i := 0; i < len(lista); i++ {
+		nodo := NuevoNodoMerkHoja(strconv.Itoa(lista[i].Dpi), lista[i].Nombre)
+		arbol.Datos = append(arbol.Datos, nodo)
+		arbol.Num += 1
+	}
+}
+
+func (arbol *ArbolMerk) GraficarGrafoUsers() {
+	arbol.CrearArbol()
+	direct := "./react-server/reactserver/src/assets/images/grafos/merkle/"
+	var graph = "digraph G{\n"
+	graph += "rankdir=TB\n node[shape=box]\nconcentrate=true\n"
+	str1, _ := arbol._GraficarGrafo(arbol.Raiz, 0)
+	graph += str1
+	graph += "\n}"
+	data := []byte(graph)
+	err := ioutil.WriteFile(direct+"usuarios.dot", data, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	path, _ := exec.LookPath("dot")
+	cmd, _ := exec.Command(path, "-Tpng", direct+"usuarios.dot").Output()
+	mode := int(0777)
+	err = ioutil.WriteFile(direct+"usuarios.png", cmd, os.FileMode(mode))
+	if err != nil {
+		log.Fatal(err)
 	}
 }
